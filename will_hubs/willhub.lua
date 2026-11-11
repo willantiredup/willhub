@@ -1,28 +1,45 @@
 -- ==========================================
--- WillHub - WorldRemotes Specific Hooker
+-- WillHub - The Real World Hooker (Fix)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
-if CoreGui:FindFirstChild("WillHubHooker") then CoreGui.WillHubHooker:Destroy() end
+if CoreGui:FindFirstChild("WillHubCyber") then CoreGui.WillHubCyber:Destroy() end
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "WillHubHooker"
+gui.Name = "WillHubCyber"
 gui.ResetOnSpawn = false
 gui.Parent = CoreGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 350, 0, 200)
-main.Position = UDim2.new(0, 10, 0, 100)
+main.Size = UDim2.new(0, 350, 0, 250)
+main.Position = UDim2.new(0.5, -175, 0.5, -125)
 main.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
 main.Active = true
 main.Draggable = true
 main.Parent = gui
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 6)
 
+local top = Instance.new("Frame")
+top.Size = UDim2.new(1, 0, 0, 30)
+top.BackgroundColor3 = Color3.fromRGB(25, 28, 38)
+top.Parent = main
+Instance.new("UICorner", top).CornerRadius = UDim.new(0, 6)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 1, 0)
+title.BackgroundTransparency = 1
+title.Text = "🕵️ WillHub - World Hooker"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 13
+title.Parent = top
+
 local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(1, -10, 1, -10)
-scroll.Position = UDim2.new(0, 5, 0, 5)
+scroll.Size = UDim2.new(1, -10, 1, -40)
+scroll.Position = UDim2.new(0, 5, 0, 35)
 scroll.BackgroundTransparency = 1
 scroll.ScrollBarThickness = 3
 scroll.Parent = main
@@ -41,39 +58,30 @@ local function log(text)
     task.defer(function() scroll.CanvasSize = UDim2.new(0, 0, 0, list.AbsoluteContentSize.Y) end)
 end
 
-local function hookRemote(remote)
-    if remote:IsA("RemoteEvent") then
-        local old = remote.FireServer
-        remote.FireServer = function(self, ...)
-            local args = {...}
-            local str = ""
-            for i, v in pairs(args) do str = str .. tostring(v) .. " " end
-            log("[EVENT] " .. remote.Name .. " (" .. str .. ")")
-            return old(self, ...)
-        end
-    elseif remote:IsA("RemoteFunction") then
-        local old = remote.InvokeServer
-        remote.InvokeServer = function(self, ...)
-            local args = {...}
-            local str = ""
-            for i, v in pairs(args) do str = str .. tostring(v) .. " " end
-            log("[FUNC] " .. remote.Name .. " (" .. str .. ")")
-            return old(self, ...)
+-- Hook Namecall
+local oldNamecall
+oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+    local method = getnamecallmethod()
+    local args = {...}
+    
+    if not checkcaller() and (method == "FireServer" or method == "InvokeServer") then
+        local rName = tostring(self.Name)
+        -- Cek apakah ini remote dari WorldRemotes
+        if self.Parent and self.Parent.Name == "WorldRemotes" then
+            local argsStr = ""
+            for i, v in pairs(args) do
+                if type(v) == "table" then argsStr = argsStr .. "[Table] "
+                else argsStr = argsStr .. tostring(v) .. " " end
+            end
+            log("[" .. method .. "] " .. rName .. " -> " .. argsStr)
         end
     end
-end
+    return oldNamecall(self, ...)
+end)
 
 task.spawn(function()
-    log("Mencari WorldRemotes...")
-    local worldFolder = ReplicatedStorage:WaitForChild("WorldRemotes", 10)
-    if not worldFolder then
-        log("WorldRemotes tidak ditemukan!")
-        return
-    end
-    
-    log("Menghubungkan ke semua remote...")
-    for _, remote in pairs(worldFolder:GetChildren()) do
-        hookRemote(remote)
-    end
-    log("Selesai! Silakan pukul block manual.")
+    log("Menyiapkan Hook...")
+    task.wait(1)
+    log("Hook Aktif! Silakan pukul 1 block.")
+    log("Tunggu tulisan hijau muncul.")
 end)
