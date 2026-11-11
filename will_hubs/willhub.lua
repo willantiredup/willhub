@@ -1,8 +1,11 @@
 -- ==========================================
--- 1. UI MODERN (Langsung di sini, tanpa file luar)
+-- WillHub - Growblox (Modern UI + Floating Toggle)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
 
 if CoreGui:FindFirstChild("WillHubModern") then CoreGui.WillHubModern:Destroy() end
 
@@ -13,12 +16,31 @@ local COLORS = {
     Accent = Color3.fromRGB(45, 100, 245),
     TextWhite = Color3.fromRGB(255, 255, 255),
     TextGray = Color3.fromRGB(150, 155, 165),
+    Green = Color3.fromRGB(50, 200, 50),
+    Red = Color3.fromRGB(200, 50, 50)
 }
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "WillHubModern"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
+
+-- ==========================================
+-- 1. FLOATING TOGGLE BUTTON (Buka/Tutup UI)
+-- ==========================================
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Name = "FloatingToggle"
+ToggleBtn.Size = UDim2.new(0, 45, 0, 45)
+ToggleBtn.Position = UDim2.new(0, 20, 0, 100)
+ToggleBtn.BackgroundColor3 = COLORS.Accent
+ToggleBtn.Text = "W"
+ToggleBtn.TextColor3 = COLORS.TextWhite
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 20
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true -- Biar bisa digeser
+ToggleBtn.Parent = ScreenGui
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 
 local Main = Instance.new("Frame")
 Main.Size = UDim2.new(0, 650, 0, 420)
@@ -27,9 +49,28 @@ Main.BackgroundColor3 = COLORS.BgMain
 Main.BorderSizePixel = 0
 Main.Active = true
 Main.Draggable = true
+Main.Visible = true
 Main.Parent = ScreenGui
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
 
+-- Logika klik (bedain antara klik buat buka UI vs digeser)
+local clickTime = 0
+local startPos = Vector2.new(0,0)
+ToggleBtn.MouseButton1Down:Connect(function()
+    clickTime = tick()
+    startPos = ToggleBtn.AbsolutePosition
+end)
+ToggleBtn.MouseButton1Up:Connect(function()
+    local timePassed = tick() - clickTime
+    local distance = (ToggleBtn.AbsolutePosition - startPos).Magnitude
+    if timePassed < 0.2 and distance < 5 then
+        Main.Visible = not Main.Visible
+    end
+end)
+
+-- ==========================================
+-- 2. SIDEBAR
+-- ==========================================
 local Sidebar = Instance.new("Frame")
 Sidebar.Size = UDim2.new(0, 160, 1, 0)
 Sidebar.BackgroundColor3 = COLORS.BgSidebar
@@ -73,103 +114,166 @@ SearchBox.TextSize = 12
 SearchBox.TextXAlignment = Enum.TextXAlignment.Left
 SearchBox.Parent = SearchFrame
 
-local btnPabrik = Instance.new("TextButton")
-btnPabrik.Size = UDim2.new(0.9, 0, 0, 30)
-btnPabrik.Position = UDim2.new(0.05, 0, 0, 100)
-btnPabrik.BackgroundTransparency = 1
-btnPabrik.Text = "  Pabrik"
-btnPabrik.TextColor3 = COLORS.TextGray
-btnPabrik.Font = Enum.Font.Gotham
-btnPabrik.TextSize = 13
-btnPabrik.TextXAlignment = Enum.TextXAlignment.Left
-btnPabrik.Parent = Sidebar
-
-local btnKoneksi = Instance.new("TextButton")
-btnKoneksi.Size = UDim2.new(0.9, 0, 0, 30)
-btnKoneksi.Position = UDim2.new(0.05, 0, 0, 140)
-btnKoneksi.BackgroundColor3 = COLORS.Accent
-btnKoneksi.Text = "  Koneksi"
-btnKoneksi.TextColor3 = COLORS.TextWhite
-btnKoneksi.Font = Enum.Font.Gotham
-btnKoneksi.TextSize = 13
-btnKoneksi.TextXAlignment = Enum.TextXAlignment.Left
-btnKoneksi.Parent = Sidebar
-Instance.new("UICorner", btnKoneksi).CornerRadius = UDim.new(0, 4)
-
+-- ==========================================
+-- 3. KONTEN AREA (TAB SYSTEM)
+-- ==========================================
 local Content = Instance.new("Frame")
 Content.Size = UDim2.new(1, -160, 1, 0)
 Content.Position = UDim2.new(0, 160, 0, 0)
 Content.BackgroundTransparency = 1
 Content.Parent = Main
 
-local Banner = Instance.new("Frame")
-Banner.Size = UDim2.new(1, -30, 0, 45)
-Banner.Position = UDim2.new(0, 15, 0, 15)
-Banner.BackgroundColor3 = Color3.fromRGB(20, 24, 35)
-Banner.Parent = Content
-Instance.new("UICorner", Banner).CornerRadius = UDim.new(0, 6)
+local function createTab(name, layoutOrder)
+    local tab = Instance.new("Frame")
+    tab.Size = UDim2.new(1, -30, 1, -30)
+    tab.Position = UDim2.new(0, 15, 0, 15)
+    tab.BackgroundTransparency = 1
+    tab.Visible = false
+    tab.LayoutOrder = layoutOrder
+    tab.Parent = Content
+    return tab
+end
 
-local BannerText = Instance.new("TextLabel")
-BannerText.Size = UDim2.new(1, -20, 1, 0)
-BannerText.Position = UDim2.new(0, 10, 0, 0)
-BannerText.BackgroundTransparency = 1
-BannerText.Text = "Referensi game:\nWorld: TIDAK | Inventory: TIDAK | setTile cd/cangan | Panen: TIDAK | Drop: TIDAK"
-BannerText.TextColor3 = COLORS.TextGray
-BannerText.Font = Enum.Font.Gotham
-BannerText.TextSize = 11
-BannerText.TextXAlignment = Enum.TextXAlignment.Left
-BannerText.TextYAlignment = Enum.TextYAlignment.Center
-BannerText.Parent = Banner
+local TabFarm = createTab("Farm", 1)
+local TabAutoClear = createTab("Auto Clear", 2)
+local TabAutoDF = createTab("Auto DF", 3)
+local TabSetting = createTab("Setting", 4)
 
--- Toggle Auto Farm
-local ToggleFrame = Instance.new("Frame")
-ToggleFrame.Size = UDim2.new(1, -30, 0, 60)
-ToggleFrame.Position = UDim2.new(0, 15, 0, 70)
-ToggleFrame.BackgroundColor3 = COLORS.BgElement
-ToggleFrame.Parent = Content
-Instance.new("UICorner", ToggleFrame).CornerRadius = UDim.new(0, 6)
+-- SIDEBAR BUTTONS (Menu)
+local function createSidebarButton(text, layoutOrder)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.9, 0, 0, 35)
+    btn.Position = UDim2.new(0.05, 0, 0, 100 + (layoutOrder * 40))
+    btn.BackgroundColor3 = COLORS.BgElement
+    btn.Text = "  " .. text
+    btn.TextColor3 = COLORS.TextGray
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 13
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.Parent = Sidebar
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+    return btn
+end
 
-local ToggleText = Instance.new("TextLabel")
-ToggleText.Size = UDim2.new(1, -70, 1, 0)
-ToggleText.Position = UDim2.new(0, 15, 0, 0)
-ToggleText.BackgroundTransparency = 1
-ToggleText.Text = "Auto Farm Growblox"
-ToggleText.TextColor3 = COLORS.TextWhite
-ToggleText.Font = Enum.Font.GothamBold
-ToggleText.TextSize = 14
-ToggleText.TextXAlignment = Enum.TextXAlignment.Left
-ToggleText.Parent = ToggleFrame
+local btnFarm = createSidebarButton("Farm", 0)
+local btnAutoClear = createSidebarButton("Auto Clear", 1)
+local btnAutoDF = createSidebarButton("Auto DF", 2)
+local btnSetting = createSidebarButton("Setting", 3)
 
-local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Size = UDim2.new(0, 45, 0, 25)
-ToggleBtn.Position = UDim2.new(1, -60, 0.5, -12.5)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-ToggleBtn.Text = "OFF"
-ToggleBtn.TextColor3 = COLORS.TextWhite
-ToggleBtn.Font = Enum.Font.GothamBold
-ToggleBtn.TextSize = 12
-ToggleBtn.Parent = ToggleFrame
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 4)
+local activeBtn = btnFarm
+local function switchTab(tabFrame, btn)
+    TabFarm.Visible = false
+    TabAutoClear.Visible = false
+    TabAutoDF.Visible = false
+    TabSetting.Visible = false
+    
+    tabFrame.Visible = true
+    
+    activeBtn.BackgroundColor3 = COLORS.BgElement
+    activeBtn.TextColor3 = COLORS.TextGray
+    
+    btn.BackgroundColor3 = COLORS.Accent
+    btn.TextColor3 = COLORS.TextWhite
+    activeBtn = btn
+end
+
+btnFarm.MouseButton1Click:Connect(function() switchTab(TabFarm, btnFarm) end)
+btnAutoClear.MouseButton1Click:Connect(function() switchTab(TabAutoClear, btnAutoClear) end)
+btnAutoDF.MouseButton1Click:Connect(function() switchTab(TabAutoDF, btnAutoDF) end)
+btnSetting.MouseButton1Click:Connect(function() switchTab(TabSetting, btnSetting) end)
+
+-- Set Default Tab
+switchTab(TabFarm, btnFarm)
 
 -- ==========================================
--- 2. LOGIKA AUTO FARM (Berjalan di belakang)
+-- 4. ISI MASING-MASING TAB
 -- ==========================================
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local player = Players.LocalPlayer
 
-local CONFIG = { SEED_NAME = "Hay", WALK_SPEED = 60, FARM_DELAY = 1.5, OUTBOX = false }
+-- [TAB FARM]
+local function createToggle(parent, text, yPos)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 0, 45)
+    frame.Position = UDim2.new(0, 0, 0, yPos)
+    frame.BackgroundColor3 = COLORS.BgElement
+    frame.Parent = parent
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 6)
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -70, 1, 0)
+    label.Position = UDim2.new(0, 15, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = COLORS.TextWhite
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 13
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = frame
+
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 45, 0, 25)
+    btn.Position = UDim2.new(1, -60, 0.5, -12.5)
+    btn.BackgroundColor3 = COLORS.Red
+    btn.Text = "OFF"
+    btn.TextColor3 = COLORS.TextWhite
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 12
+    btn.Parent = frame
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+    
+    return btn
+end
+
+local FarmToggle = createToggle(TabFarm, "Auto Farm Growblox", 0)
+local ClearToggle = createToggle(TabFarm, "Auto Clear (Nanti)", 55)
+local DfToggle = createToggle(TabFarm, "Auto DF (Nanti)", 110)
+
+-- [TAB AUTO CLEAR]
+local ClearInfo = Instance.new("TextLabel")
+ClearInfo.Size = UDim2.new(1, 0, 0, 50)
+ClearInfo.BackgroundColor3 = COLORS.BgElement
+ClearInfo.Text = "Fitur Auto Clear akan segera hadir!"
+ClearInfo.TextColor3 = COLORS.TextWhite
+ClearInfo.Font = Enum.Font.Gotham
+ClearInfo.TextSize = 14
+ClearInfo.Parent = TabAutoClear
+Instance.new("UICorner", ClearInfo).CornerRadius = UDim.new(0, 6)
+
+-- [TAB AUTO DF]
+local DFInfo = Instance.new("TextLabel")
+DFInfo.Size = UDim2.new(1, 0, 0, 50)
+DFInfo.BackgroundColor3 = COLORS.BgElement
+DFInfo.Text = "Fitur Auto DF akan segera hadir!"
+DFInfo.TextColor3 = COLORS.TextWhite
+DFInfo.Font = Enum.Font.Gotham
+DFInfo.TextSize = 14
+DFInfo.Parent = TabAutoDF
+Instance.new("UICorner", DFInfo).CornerRadius = UDim.new(0, 6)
+
+-- [TAB SETTING]
+local SettingInfo = Instance.new("TextLabel")
+SettingInfo.Size = UDim2.new(1, 0, 0, 50)
+SettingInfo.BackgroundColor3 = COLORS.BgElement
+SettingInfo.Text = "Setting (Save/Load Config) akan segera hadir!"
+SettingInfo.TextColor3 = COLORS.TextWhite
+SettingInfo.Font = Enum.Font.Gotham
+SettingInfo.TextSize = 14
+SettingInfo.Parent = TabSetting
+Instance.new("UICorner", SettingInfo).CornerRadius = UDim.new(0, 6)
+
+
+-- ==========================================
+-- 5. LOGIKA AUTO FARM
+-- ==========================================
+local CONFIG = { SEED_NAME = "Hay", FARM_DELAY = 1.5 }
 local Remotes, PlayerData = {}, nil
-local farm, plots, isSelling, running = nil, {}, false, false
+local farm, plots, running = nil, {}, false
 
--- Load Remote & Data secara aman (Anti-Crash)
 task.spawn(function()
     pcall(function()
         Remotes.ManipulateCrop = ReplicatedStorage:WaitForChild("ManipulateCrop", 5)
         Remotes.UseMarket      = ReplicatedStorage:WaitForChild("UseMarket", 5)
         local pd = ReplicatedStorage:FindFirstChild("PlayerData", true)
         if pd then PlayerData = require(pd) end
-        print("[WillHub] Sistem Auto Farm siap.")
     end)
 end)
 
@@ -190,7 +294,6 @@ local function processPlot(plot)
     for _, crop in pairs(plot:GetChildren()) do
         if crop:FindFirstChild("CropType") then
             local cropType = crop.CropType.Value
-            -- Panen
             if cropType ~= "none" and crop:FindFirstChild("CropStage") and Remotes.ManipulateCrop then
                 local stage = crop.CropStage.Value
                 local reqStage = (PlayerData and PlayerData.get().crops[cropType]) or 3
@@ -199,7 +302,6 @@ local function processPlot(plot)
                     task.wait(0.1)
                 end
             end
-            -- Tanam
             if cropType == "none" and Remotes.ManipulateCrop then
                 pcall(function() Remotes.ManipulateCrop:FireServer(crop, "PlantSeed", CONFIG.SEED_NAME) end)
                 task.wait(0.1)
@@ -208,13 +310,11 @@ local function processPlot(plot)
     end
 end
 
--- Fungsi Tombol Toggle
-ToggleBtn.MouseButton1Click:Connect(function()
+FarmToggle.MouseButton1Click:Connect(function()
     running = not running
     if running then
-        ToggleBtn.Text = "ON"
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-        -- Mulai Loop
+        FarmToggle.Text = "ON"
+        FarmToggle.BackgroundColor3 = COLORS.Green
         task.spawn(function()
             while running do
                 pcall(function()
@@ -229,9 +329,9 @@ ToggleBtn.MouseButton1Click:Connect(function()
             end
         end)
     else
-        ToggleBtn.Text = "OFF"
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        FarmToggle.Text = "OFF"
+        FarmToggle.BackgroundColor3 = COLORS.Red
     end
 end)
 
-print("[WillHub] UI Modern berhasil dimuat! 🥀")
+print("[WillHub] UI dengan Floating Toggle berhasil dimuat! 🥀")
