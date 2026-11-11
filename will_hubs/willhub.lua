@@ -1,5 +1,5 @@
 -- ==========================================
--- WillHub - Farm UI (Accordion + Resizable)
+-- WillHub - Farm UI (Accordion + Live Detector)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
@@ -46,8 +46,8 @@ Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 
 -- MAIN WINDOW
 local Main = Instance.new("Frame")
-Main.Size = UDim2.new(0, 600, 0, 400) -- Ukuran awal
-Main.Position = UDim2.new(0.5, -300, 0.5, -200)
+Main.Size = UDim2.new(0, 600, 0, 420)
+Main.Position = UDim2.new(0.5, -300, 0.5, -210)
 Main.BackgroundColor3 = C.BgMain
 Main.Active = true
 Main.Draggable = true
@@ -59,9 +59,7 @@ MainStroke.Color = Color3.fromRGB(40, 45, 60)
 
 ToggleBtn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
 
--- ==========================================
--- RESIZE HANDLE (TARIK POJOK KANAN BAWAH)
--- ==========================================
+-- RESIZE HANDLE
 local ResizeHandle = Instance.new("TextButton")
 ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
 ResizeHandle.Position = UDim2.new(1, -20, 1, -20)
@@ -76,24 +74,18 @@ Instance.new("UICorner", ResizeHandle).CornerRadius = UDim.new(0, 4)
 
 local resizing = false
 local startSize, startMousePos
-
 ResizeHandle.MouseButton1Down:Connect(function()
     resizing = true
     startSize = Main.AbsoluteSize
     startMousePos = UserInputService:GetMouseLocation()
 end)
-
 UserInputService.InputChanged:Connect(function(input)
     if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local deltaX = UserInputService:GetMouseLocation().X - startMousePos.X
         local deltaY = UserInputService:GetMouseLocation().Y - startMousePos.Y
-        -- Batas minimal (350x250) dan maksimal (900x700)
-        local newWidth = math.clamp(startSize.X + deltaX, 350, 900)
-        local newHeight = math.clamp(startSize.Y + deltaY, 250, 700)
-        Main.Size = UDim2.new(0, newWidth, 0, newHeight)
+        Main.Size = UDim2.new(0, math.clamp(startSize.X + deltaX, 350, 900), 0, math.clamp(startSize.Y + deltaY, 250, 700))
     end
 end)
-
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         resizing = false
@@ -141,9 +133,24 @@ Scroll.Parent = Main
 local ScrollList = Instance.new("UIListLayout", Scroll)
 ScrollList.Padding = UDim.new(0, 10)
 
--- PANEL STATUS
+-- ==========================================
+-- LIVE STATUS DATA
+-- ==========================================
+local LiveData = {
+    IsRunning = false,
+    SelectedBlock = "",
+    CurrentTarget = "-",
+    Distance = "0",
+    PosX = 0,
+    PosZ = 0,
+    BreakCount = 0,
+    CollectCount = 0,
+    Action = "Idle",
+    FarmStatus = "Mencari area farm..."
+}
+
 local StatusFrame = Instance.new("Frame")
-StatusFrame.Size = UDim2.new(1, -10, 0, 120)
+StatusFrame.Size = UDim2.new(1, -10, 0, 140)
 StatusFrame.BackgroundColor3 = C.BgElement
 StatusFrame.Parent = Scroll
 Instance.new("UICorner", StatusFrame).CornerRadius = UDim.new(0, 6)
@@ -152,17 +159,13 @@ local StatusText = Instance.new("TextLabel")
 StatusText.Size = UDim2.new(1, -20, 1, -10)
 StatusText.Position = UDim2.new(0, 10, 0, 5)
 StatusText.BackgroundTransparency = 1
-StatusText.Text = "Status : BERHENTI\n..."
+StatusText.Text = "Memuat data..."
 StatusText.TextColor3 = C.TextG
 StatusText.Font = Enum.Font.Code
 StatusText.TextSize = 12
 StatusText.TextXAlignment = Enum.TextXAlignment.Left
 StatusText.TextYAlignment = Enum.TextYAlignment.Top
 StatusText.Parent = StatusFrame
-
-local isFarmRunning = false
-local selectedBlock = ""
-local breakCount = 0
 
 -- FUNGSI ACCORDION
 local function createAccordion(title)
@@ -210,14 +213,12 @@ local function createAccordion(title)
     return inner
 end
 
--- FUNGSI TOGGLE
 local function createToggle(parent, text, callback)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 0, 40)
     frame.BackgroundColor3 = C.BgMain
     frame.Parent = parent
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 4)
-    
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(1, -60, 1, 0)
     lbl.Position = UDim2.new(0, 10, 0, 0)
@@ -228,7 +229,6 @@ local function createToggle(parent, text, callback)
     lbl.TextSize = 12
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = frame
-    
     local bg = Instance.new("TextButton")
     bg.Size = UDim2.new(0, 40, 0, 20)
     bg.Position = UDim2.new(1, -50, 0.5, -10)
@@ -236,14 +236,12 @@ local function createToggle(parent, text, callback)
     bg.Text = ""
     bg.Parent = frame
     Instance.new("UICorner", bg).CornerRadius = UDim.new(1, 0)
-    
     local dot = Instance.new("Frame")
     dot.Size = UDim2.new(0, 14, 0, 14)
     dot.Position = UDim2.new(0, 3, 0.5, -7)
     dot.BackgroundColor3 = C.TextG
     dot.Parent = bg
     Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
-    
     local isActive = false
     bg.MouseButton1Click:Connect(function()
         isActive = not isActive
@@ -284,7 +282,7 @@ local function refreshBlocks()
     for _, child in pairs(blockScroll:GetChildren()) do
         if child:IsA("TextButton") then child:Destroy() end
     end
-    selectedBlock = ""
+    LiveData.SelectedBlock = ""
     local bp = player:FindFirstChild("Backpack")
     if bp then
         for _, tool in pairs(bp:GetChildren()) do
@@ -299,7 +297,7 @@ local function refreshBlocks()
                 btn.Parent = blockScroll
                 Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
                 btn.MouseButton1Click:Connect(function()
-                    selectedBlock = tool.Name
+                    LiveData.SelectedBlock = tool.Name
                     for _, b in pairs(blockScroll:GetChildren()) do
                         if b:IsA("TextButton") then b.BackgroundColor3 = C.BgMain end
                     end
@@ -324,6 +322,8 @@ refreshBtn.MouseButton1Click:Connect(refreshBlocks)
 local OtomatisInner = createAccordion("Otomatis")
 local isFastPunch = false
 createToggle(OtomatisInner, "Fast Punch", function(state) isFastPunch = state end)
+local isAutoCollect = false
+createToggle(OtomatisInner, "Auto Collect", function(state) isAutoCollect = state end)
 
 local LanjutanInner = createAccordion("Lanjutan")
 local areaInput = Instance.new("TextBox")
@@ -337,15 +337,17 @@ areaInput.TextSize = 11
 areaInput.Parent = LanjutanInner
 Instance.new("UICorner", areaInput).CornerRadius = UDim.new(0, 4)
 
--- LOGIKA FARM
+-- ==========================================
+-- LOGIKA FARM (LIVE UPDATE DATA)
+-- ==========================================
 local farmThread = nil
 playBtn.MouseButton1Click:Connect(function()
-    isFarmRunning = not isFarmRunning
-    if isFarmRunning then
+    LiveData.IsRunning = not LiveData.IsRunning
+    if LiveData.IsRunning then
         playBtn.Text = "BERHENTI FARM"
         playBtn.BackgroundColor3 = C.Red
         farmThread = task.spawn(function()
-            while isFarmRunning do
+            while LiveData.IsRunning do
                 pcall(function()
                     local char = player.Character
                     if not char then return end
@@ -361,8 +363,8 @@ playBtn.MouseButton1Click:Connect(function()
                     for _, part in pairs(parts) do
                         if part:IsA("BasePart") and not part:IsDescendantOf(char) and part.Name ~= "Baseplate" and part.Size.Y > 0.2 then
                             local isMatch = false
-                            if selectedBlock == "" then isMatch = true
-                            elseif string.find(string.lower(part.Name), string.lower(selectedBlock)) then isMatch = true end
+                            if LiveData.SelectedBlock == "" then isMatch = true
+                            elseif string.find(string.lower(part.Name), string.lower(LiveData.SelectedBlock)) then isMatch = true end
                             if isMatch then
                                 local dist = (part.Position - hrp.Position).Magnitude
                                 if dist < shortestDist then
@@ -374,16 +376,46 @@ playBtn.MouseButton1Click:Connect(function()
                     end
 
                     if targetPart then
+                        LiveData.CurrentTarget = targetPart.Name
+                        LiveData.Distance = math.floor(shortestDist)
+                        LiveData.Action = "Memukul block..."
+                        
                         hum:MoveTo(targetPart.Position)
                         local bDelay = isFastPunch and 0.01 or 0.2
                         task.wait(bDelay + math.random(-2,2)/100)
                         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
                         task.wait(0.02)
                         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
-                        breakCount = breakCount + 1
+                        LiveData.BreakCount = LiveData.BreakCount + 1
                     else
+                        LiveData.CurrentTarget = "-"
+                        LiveData.Distance = "0"
+                        LiveData.Action = "Mencari block..."
                         hum:MoveTo(hrp.Position + Vector3.new(math.random(-10,10), 0, math.random(-10,10)))
                         task.wait(0.5)
+                    end
+
+                    -- Auto Collect
+                    if isAutoCollect then
+                        local closestItem = nil
+                        local shortestItemDist = 40
+                        for _, part in pairs(parts) do
+                            if part:IsA("BasePart") and not part:IsDescendantOf(char) and part.Name ~= "Baseplate" then
+                                if part.Size.Magnitude <= 15 then
+                                    local dist = (part.Position - hrp.Position).Magnitude
+                                    if dist < shortestItemDist then
+                                        shortestItemDist = dist
+                                        closestItem = part
+                                    end
+                                end
+                            end
+                        end
+                        if closestItem then
+                            LiveData.Action = "Mengambil item..."
+                            hum:MoveTo(closestItem.Position)
+                            LiveData.CollectCount = LiveData.CollectCount + 1
+                            task.wait(0.3)
+                        end
                     end
                 end)
             end
@@ -391,20 +423,48 @@ playBtn.MouseButton1Click:Connect(function()
     else
         playBtn.Text = "MULAI FARM"
         playBtn.BackgroundColor3 = C.Accent
+        LiveData.Action = "Idle"
         if farmThread then task.cancel(farmThread) end
     end
 end)
 
+-- ==========================================
+-- LIVE DETECTOR (UPDATE UI SETIAP FRAME)
+-- ==========================================
 RunService.RenderStepped:Connect(function()
     if not Main.Visible then return end
-    local pos = "-"
+    
+    -- 1. Deteksi Posisi Karakter
     local char = player.Character
     if char and char:FindFirstChild("HumanoidRootPart") then
         local p = char.HumanoidRootPart.Position
-        pos = string.format("(%d,%d)", p.X, p.Z)
+        LiveData.PosX = math.floor(p.X)
+        LiveData.PosZ = math.floor(p.Z)
     end
+
+    -- 2. Deteksi Area Farm Sendiri
+    local farmName = "Tidak ada"
+    for i = 1, 8 do
+        local f = workspace:FindFirstChild("Farm" .. i)
+        if f and f:FindFirstChild("Owner") and f.Owner.Value == player then
+            farmName = f.Name
+            break
+        end
+    end
+    LiveData.FarmStatus = farmName
+
+    -- 3. Format Teks Status
+    local colorStatus = LiveData.IsRunning and "🟢 JALAN" or "🔴 BERHENTI"
+    local colorAksi = LiveData.IsRunning and C.TextW or C.TextG
+    
     StatusText.Text = string.format(
-        "Status : %s\nBlock : %s\nKarakter : %s\nTile : -\nPlace/Break/Collect : 0 / %d / 0\nCollect : Remote via ?\nPosisi farm: - | refill on | return on | drop seed off\nAksi : -",
-        isFarmRunning and "JALAN" or "BERHENTI", selectedBlock == "" and "-" or selectedBlock, pos, breakCount
+        "Status : %s\nBlock : %s\nKarakter : (%d, %d)\nTile : %s\nPlace/Break/Collect : 0 / %d / %d\nCollect : Remote via ?\nPosisi farm: %s | refill on | return on | drop seed off\nAksi : %s",
+        colorStatus, 
+        LiveData.SelectedBlock == "" and "Semua" or LiveData.SelectedBlock, 
+        LiveData.PosX, LiveData.PosZ, 
+        LiveData.CurrentTarget, 
+        LiveData.BreakCount, LiveData.CollectCount,
+        LiveData.FarmStatus, 
+        LiveData.Action
     )
 end)
