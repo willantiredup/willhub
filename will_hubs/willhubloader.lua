@@ -1,19 +1,9 @@
-local GITHUB_USER = "willantiredup"
-local REPO        = "willhub"
-local BRANCH      = "main"
-local FILE        = "will_hubs/willhub.lua"
-
-local URL = ("https://raw.githubusercontent.com/%s/%s/%s/%s")
-    :format(GITHUB_USER, REPO, BRANCH, FILE) -- Perhatikan: pakai GITHUB_USER, bukan teks mentah
-
-local ok, err = pcall(function()
-    local src = game:HttpGet(URL, true)
-    if not src or #src < 100 then
-        error("Fetch gagal / file kosong: " .. URL)
-    end
-    loadstring(src)()
+-- WillHub Loader
+local url = "https://raw.githubusercontent.com/willantiredup/willhub/refs/heads/main/will_hubs/gui.lua?v=9999"
+local success, err = pcall(function()
+    loadstring(game:HttpGet(url, true))()
 end)
 
-if not ok then
-    warn("[WillHub Loader] " .. tostring(err))
+if not success then
+    warn("[WillHub] Gagal memuat GUI: " .. tostring(err))
 end
