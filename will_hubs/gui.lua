@@ -1,5 +1,5 @@
 -- ==========================================
--- WillHub GUI (SkyP Replica - 100% Functional)
+-- WillHub GUI (SkyP Replica - 100% Functional Fix)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
@@ -18,8 +18,7 @@ local C = {
     TextW = Color3.fromRGB(255, 255, 255),
     TextG = Color3.fromRGB(130, 140, 160),
     TextD = Color3.fromRGB(80, 90, 110),
-    Green = Color3.fromRGB(50, 200, 50),
-    Red = Color3.fromRGB(200, 50, 50)
+    Green = Color3.fromRGB(50, 200, 50)
 }
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -27,13 +26,8 @@ ScreenGui.Name = "WillHubModern"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
--- UI NOTIFICATION FUNCTION
 local function notify(title, text)
-    pcall(function()
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = title, Text = text, Duration = 3
-        })
-    end)
+    pcall(function() game:GetService("StarterGui"):SetCore("SendNotification", {Title = title, Text = text, Duration = 3}) end)
 end
 
 -- MAIN WINDOW
@@ -164,7 +158,7 @@ local PageKoneksi = createPage("Koneksi")
 local PageDiscord = createPage("Discord")
 local PageObservasi = createPage("Observasi")
 
--- FUNGSI SWITCH TAB
+-- FUNGSI SWITCH TAB (DIPERBAIKI)
 local activeBtn = nil
 local function switchTab(pageName, btn)
     for _, p in pairs(Pages) do p.Visible = false end
@@ -195,6 +189,11 @@ local function addMenu(text, y, isHeader, pageName)
     
     if not isHeader and pageName then
         btn.MouseButton1Click:Connect(function() switchTab(pageName, btn) end)
+    end
+    
+    -- Biar tab Pabrik otomatis ke-set aktif di awal
+    if pageName == "Pabrik" then
+        switchTab("Pabrik", btn)
     end
     return btn
 end
@@ -269,6 +268,21 @@ local function createButton(parent, text, yPos, callback)
     return btn
 end
 
+local function createTextBox(parent, placeholder, yPos)
+    local tb = Instance.new("TextBox")
+    tb.Size = UDim2.new(1, -20, 0, 35)
+    tb.Position = UDim2.new(0, 10, 0, yPos)
+    tb.BackgroundColor3 = C.BgElement
+    tb.PlaceholderText = placeholder
+    tb.Text = ""
+    tb.TextColor3 = C.TextW
+    tb.Font = Enum.Font.Gotham
+    tb.TextSize = 12
+    tb.Parent = parent
+    Instance.new("UICorner", tb).CornerRadius = UDim.new(0, 4)
+    return tb
+end
+
 -- ================= ISI MENU: PABRIK =================
 local clickThread = nil
 createToggle(PagePabrik, "Auto Clicker (Pabrik)", 10, function(state)
@@ -291,22 +305,6 @@ createToggle(PagePabrik, "Auto Clicker (Pabrik)", 10, function(state)
 end)
 
 -- ================= ISI MENU: TITIK DROP =================
-local dropY = 10
-local function createTextBox(parent, placeholder, yPos, callback)
-    local tb = Instance.new("TextBox")
-    tb.Size = UDim2.new(1, -20, 0, 35)
-    tb.Position = UDim2.new(0, 10, 0, yPos)
-    tb.BackgroundColor3 = C.BgElement
-    tb.PlaceholderText = placeholder
-    tb.Text = ""
-    tb.TextColor3 = C.TextW
-    tb.Font = Enum.Font.Gotham
-    tb.TextSize = 12
-    tb.Parent = parent
-    Instance.new("UICorner", tb).CornerRadius = UDim.new(0, 4)
-    return tb
-end
-
 local tpX = createTextBox(PageTitikDrop, "X Coordinate (Contoh: 0)", 10)
 local tpY = createTextBox(PageTitikDrop, "Y Coordinate (Contoh: 50)", 50)
 local tpZ = createTextBox(PageTitikDrop, "Z Coordinate (Contoh: 0)", 90)
@@ -379,7 +377,7 @@ end)
 createButton(PageDiscord, "COPY LINK DISCORD", 10, function()
     pcall(function()
         setclipboard("https://discord.gg/willhub")
-        notify("Discord", "Link berhasil di-copy ke clipboard!")
+        notify("Discord", "Link berhasil di-copy!")
     end)
 end)
 
@@ -415,6 +413,3 @@ createToggle(PageObservasi, "Player ESP (Highlight)", 10, function(state)
         end
     end
 end)
-
--- START DEFAULT
-switchTab("Pabrik", Sidebar:GetChildren()[4]) -- Otomatis buka Pabrik
