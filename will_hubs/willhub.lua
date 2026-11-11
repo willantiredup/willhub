@@ -223,7 +223,6 @@ local radiusBox = createInput(pFarm, "Radius Area (Studs)", "30", 0)
 local breakDelayBox = createInput(pFarm, "Break Delay (Detik)", "0.2", 40)
 local placeDelayBox = createInput(pFarm, "Place Delay (Detik)", "0.5", 80)
 
--- Variabel Thread
 local breakThread, placeThread, collectThread, walkThread = nil, nil, nil, nil
 local isBreaking, isPlacing, isCollecting, isWalking = false, false, false, false
 
@@ -286,7 +285,6 @@ createToggle(pFarm, "Auto Place (Tanam Block)", function(state)
                     local hrp = char and char:FindFirstChild("HumanoidRootPart")
                     local hum = char and char:FindFirstChildOfClass("Humanoid")
                     if hrp and hum then
-                        -- Cari tool seed di backpack
                         local bp = player:FindFirstChild("Backpack")
                         local seed = nil
                         if bp then
@@ -301,7 +299,6 @@ createToggle(pFarm, "Auto Place (Tanam Block)", function(state)
                         if seed then
                             hum:EquipTool(seed)
                             task.wait(0.2)
-                            -- Klik kanan buat nanem
                             VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
                             task.wait(0.05)
                             VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
