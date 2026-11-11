@@ -10,7 +10,7 @@ local BRANCH      = "main"
 local FILE        = "willhub.lua"
 
 local URL = ("https://raw.githubusercontent.com/%s/%s/%s/%s")
-    :format(willantiredup, REPO, BRANCH, FILE)
+    :format("willantiredup", REPO, BRANCH, FILE)
 
 local ok, err = pcall(function()
     local src = game:HttpGet(URL, true)
