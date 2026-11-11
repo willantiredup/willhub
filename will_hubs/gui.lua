@@ -1,19 +1,19 @@
--- WillHub GUI (SkyP Style Replica + Auto Farm)
+-- WillHub GUI (100% SkyP Replica)
 local CoreGui = game:GetService("CoreGui")
-local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local player = game:GetService("Players").LocalPlayer
 
 if CoreGui:FindFirstChild("WillHubModern") then CoreGui.WillHubModern:Destroy() end
 
-local COLORS = {
-    BgMain = Color3.fromRGB(15, 17, 24),
-    BgSidebar = Color3.fromRGB(20, 23, 32),
-    BgElement = Color3.fromRGB(25, 28, 38),
-    Accent = Color3.fromRGB(45, 100, 245),
-    TextWhite = Color3.fromRGB(255, 255, 255),
-    TextGray = Color3.fromRGB(150, 155, 165),
+local C = {
+    BgMain = Color3.fromRGB(13, 15, 23),
+    BgSidebar = Color3.fromRGB(17, 20, 28),
+    BgElement = Color3.fromRGB(23, 27, 38),
+    Accent = Color3.fromRGB(43, 104, 227),
+    TextW = Color3.fromRGB(255, 255, 255),
+    TextG = Color3.fromRGB(130, 140, 160),
+    TextD = Color3.fromRGB(80, 90, 110)
 }
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -21,61 +21,57 @@ ScreenGui.Name = "WillHubModern"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
--- MAIN WINDOW
+-- Main Window (Lebih lebar sesuai screenshot)
 local Main = Instance.new("Frame")
-Main.Size = UDim2.new(0, 650, 0, 420)
-Main.Position = UDim2.new(0.5, -325, 0.5, -210)
-Main.BackgroundColor3 = COLORS.BgMain
-Main.BorderSizePixel = 0
+Main.Size = UDim2.new(0, 680, 0, 400)
+Main.Position = UDim2.new(0.5, -340, 0.5, -200)
+Main.BackgroundColor3 = C.BgMain
 Main.Active = true
 Main.Draggable = true
-Main.ClipsDescendants = true
 Main.Parent = ScreenGui
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 6)
 local MainStroke = Instance.new("UIStroke", Main)
-MainStroke.Color = Color3.fromRGB(40, 45, 60)
-MainStroke.Thickness = 1
+MainStroke.Color = Color3.fromRGB(30, 35, 50)
 
--- SIDEBAR
+-- ================= SIDEBAR =================
 local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.new(0, 160, 1, 0)
-Sidebar.BackgroundColor3 = COLORS.BgSidebar
+Sidebar.Size = UDim2.new(0, 170, 1, 0)
+Sidebar.BackgroundColor3 = C.BgSidebar
 Sidebar.Parent = Main
-Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
-
-local SidebarFix = Instance.new("Frame")
-SidebarFix.Size = UDim2.new(0, 10, 1, 0)
-SidebarFix.Position = UDim2.new(1, -10, 0, 0)
-SidebarFix.BackgroundColor3 = COLORS.BgSidebar
-SidebarFix.BorderSizePixel = 0
-SidebarFix.Parent = Sidebar
+Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 6)
+-- Fix ujung kanan sidebar biar ga melengkung
+local SideFix = Instance.new("Frame", Sidebar)
+SideFix.Size = UDim2.new(0, 10, 1, 0)
+SideFix.Position = UDim2.new(1, -10, 0, 0)
+SideFix.BackgroundColor3 = C.BgSidebar
+SideFix.BorderSizePixel = 0
 
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -20, 0, 40)
-Title.Position = UDim2.new(0, 20, 0, 10)
+Title.Size = UDim2.new(1, -20, 0, 30)
+Title.Position = UDim2.new(0, 15, 0, 15)
 Title.BackgroundTransparency = 1
 Title.Text = "WillHub 🥀"
-Title.TextColor3 = COLORS.TextWhite
+Title.TextColor3 = C.TextW
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = Sidebar
 
 local SubTitle = Instance.new("TextLabel")
-SubTitle.Size = UDim2.new(1, -20, 0, 20)
-SubTitle.Position = UDim2.new(0, 20, 0, 40)
+SubTitle.Size = UDim2.new(1, -20, 0, 15)
+SubTitle.Position = UDim2.new(0, 15, 0, 40)
 SubTitle.BackgroundTransparency = 1
 SubTitle.Text = "discord.gg/willhub"
-SubTitle.TextColor3 = COLORS.TextGray
+SubTitle.TextColor3 = C.TextG
 SubTitle.Font = Enum.Font.Gotham
 SubTitle.TextSize = 10
 SubTitle.TextXAlignment = Enum.TextXAlignment.Left
 SubTitle.Parent = Sidebar
 
 local SearchFrame = Instance.new("Frame")
-SearchFrame.Size = UDim2.new(0.9, 0, 0, 30)
-SearchFrame.Position = UDim2.new(0.05, 0, 0, 70)
-SearchFrame.BackgroundColor3 = COLORS.BgElement
+SearchFrame.Size = UDim2.new(1, -20, 0, 30)
+SearchFrame.Position = UDim2.new(0, 10, 0, 65)
+SearchFrame.BackgroundColor3 = C.BgElement
 SearchFrame.Parent = Sidebar
 Instance.new("UICorner", SearchFrame).CornerRadius = UDim.new(0, 4)
 
@@ -84,52 +80,55 @@ SearchBox.Size = UDim2.new(1, -20, 1, 0)
 SearchBox.Position = UDim2.new(0, 10, 0, 0)
 SearchBox.BackgroundTransparency = 1
 SearchBox.Text = "Cari fitur..."
-SearchBox.TextColor3 = COLORS.TextGray
+SearchBox.TextColor3 = C.TextG
 SearchBox.Font = Enum.Font.Gotham
-SearchBox.TextSize = 12
+SearchBox.TextSize = 11
 SearchBox.TextXAlignment = Enum.TextXAlignment.Left
 SearchBox.Parent = SearchFrame
 
-local function createSidebarBtn(text, yPos, isHeader, isActive)
+-- Sidebar Menu Items (Posisi Y disesuaikan persis)
+local function addMenu(text, y, isHeader, isActive)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.9, 0, 0, 30)
-    btn.Position = UDim2.new(0.05, 0, 0, yPos)
+    btn.Size = UDim2.new(0, 150, 0, 26)
+    btn.Position = UDim2.new(0, 10, 0, y)
     btn.BackgroundTransparency = 1
     btn.Text = "  " .. text
-    btn.TextColor3 = isActive and COLORS.TextWhite or COLORS.TextGray
+    btn.TextColor3 = isHeader and C.TextD or (isActive and C.TextW or C.TextG)
     btn.Font = isHeader and Enum.Font.GothamBold or Enum.Font.Gotham
     btn.TextSize = isHeader and 11 or 13
     btn.TextXAlignment = Enum.TextXAlignment.Left
     btn.Parent = Sidebar
+    
     if isActive then
         btn.BackgroundTransparency = 0
-        btn.BackgroundColor3 = COLORS.Accent
+        btn.BackgroundColor3 = C.Accent
         Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
     end
     return btn
 end
 
-createSidebarBtn("Pabrik", 110, false, false)
-createSidebarBtn("Titik Drop", 145, false, false)
-createSidebarBtn("Dirt Farm", 180, false, false)
-createSidebarBtn("FITUR", 220, true, false)
-createSidebarBtn("KEAMANAN", 250, true, false)
-createSidebarBtn("SETELAN", 280, true, false)
-createSidebarBtn("Pengaturan", 315, false, false)
-createSidebarBtn("Koneksi", 350, false, true)
-createSidebarBtn("Discord", 385, false, false)
-createSidebarBtn("Observasi", 420, false, false)
+addMenu("Pabrik", 110, false, false)
+addMenu("Titik Drop", 140, false, false)
+addMenu("Dirt Farm", 170, false, false)
+addMenu("FITUR", 210, true, false)
+addMenu("KEAMANAN", 235, true, false)
+addMenu("SETELAN", 260, true, false)
+addMenu("Pengaturan", 290, false, false)
+addMenu("Koneksi", 320, false, true) -- Active
+addMenu("Discord", 350, false, false)
+addMenu("Observasi", 380, false, false)
 
--- CONTENT AREA
+-- ================= CONTENT AREA =================
 local Content = Instance.new("Frame")
-Content.Size = UDim2.new(1, -160, 1, 0)
-Content.Position = UDim2.new(0, 160, 0, 0)
+Content.Size = UDim2.new(1, -170, 1, 0)
+Content.Position = UDim2.new(0, 170, 0, 0)
 Content.BackgroundTransparency = 1
 Content.Parent = Main
 
 local ContentList = Instance.new("UIListLayout")
 ContentList.Padding = UDim.new(0, 10)
 ContentList.Parent = Content
+ContentList.SortOrder = Enum.SortOrder.LayoutOrder
 
 local ContentPad = Instance.new("UIPadding")
 ContentPad.PaddingTop = UDim.new(0, 15)
@@ -137,142 +136,169 @@ ContentPad.PaddingLeft = UDim.new(0, 15)
 ContentPad.PaddingRight = UDim.new(0, 15)
 ContentPad.Parent = Content
 
+-- Banner Referensi Game
 local Banner = Instance.new("Frame")
-Banner.Size = UDim2.new(1, 0, 0, 50)
-Banner.BackgroundColor3 = Color3.fromRGB(20, 24, 35)
+Banner.Size = UDim2.new(1, 0, 0, 45)
+Banner.BackgroundColor3 = C.BgElement
+Banner.LayoutOrder = 1
 Banner.Parent = Content
-Instance.new("UICorner", Banner).CornerRadius = UDim.new(0, 6)
-local BannerStroke = Instance.new("UIStroke", Banner)
-BannerStroke.Color = COLORS.Accent
-BannerStroke.Thickness = 1
+Instance.new("UICorner", Banner).CornerRadius = UDim.new(0, 4)
+
+-- Garis biru kecil di kiri banner
+local BannerLine = Instance.new("Frame")
+BannerLine.Size = UDim2.new(0, 3, 0.8, 0)
+BannerLine.Position = UDim2.new(0, 0, 0.1, 0)
+BannerLine.BackgroundColor3 = C.Accent
+BannerLine.Parent = Banner
 
 local BannerText = Instance.new("TextLabel")
 BannerText.Size = UDim2.new(1, -20, 1, 0)
 BannerText.Position = UDim2.new(0, 10, 0, 0)
 BannerText.BackgroundTransparency = 1
-BannerText.Text = "Referensi game:\nWorld: TIDAK | Inventory: TIDAK | setTile cd/cangan | Panen: TIDAK | Drop: TIDAK"
-BannerText.TextColor3 = COLORS.TextGray
+BannerText.Text = "Referensi game:\nWorld: TIDAK | Inventory: TIDAK | setTile cd/cangan | Panen: TIDAK | Drop:\nTIDAK | Pohon: TIDAK | Pemain: TIDAK | Animasi: OK | Dropdown: OK"
+BannerText.TextColor3 = C.TextG
 BannerText.Font = Enum.Font.Gotham
-BannerText.TextSize = 11
+BannerText.TextSize = 10
 BannerText.TextXAlignment = Enum.TextXAlignment.Left
 BannerText.TextYAlignment = Enum.TextYAlignment.Center
 BannerText.Parent = Banner
 
-local function createAccordion(titleText)
-    local accFrame = Instance.new("Frame")
-    accFrame.Size = UDim2.new(1, 0, 0, 45)
-    accFrame.BackgroundColor3 = COLORS.BgElement
-    accFrame.ClipsDescendants = true
-    accFrame.Parent = Content
-    Instance.new("UICorner", accFrame).CornerRadius = UDim.new(0, 6)
+-- Fungsi Accordion
+local function createAcc(title, layoutOrder)
+    local acc = Instance.new("Frame")
+    acc.Size = UDim2.new(1, 0, 0, 40)
+    acc.BackgroundColor3 = C.BgElement
+    acc.LayoutOrder = layoutOrder
+    acc.ClipsDescendants = true
+    acc.Parent = Content
+    Instance.new("UICorner", acc).CornerRadius = UDim.new(0, 4)
+
+    local line = Instance.new("Frame", acc)
+    line.Size = UDim2.new(0, 3, 0, 15)
+    line.Position = UDim2.new(0, 10, 0.5, -7.5)
+    line.BackgroundColor3 = C.Accent
 
     local header = Instance.new("TextButton")
-    header.Size = UDim2.new(1, 0, 0, 45)
+    header.Size = UDim2.new(1, 0, 0, 40)
     header.BackgroundTransparency = 1
-    header.Text = "  |  " .. titleText
-    header.TextColor3 = COLORS.TextWhite
+    header.Text = "    " .. title
+    header.TextColor3 = C.TextW
     header.Font = Enum.Font.GothamBold
-    header.TextSize = 13
+    header.TextSize = 12
     header.TextXAlignment = Enum.TextXAlignment.Left
-    header.Parent = accFrame
+    header.Parent = acc
 
     local inner = Instance.new("Frame")
     inner.Size = UDim2.new(1, -20, 0, 0)
-    inner.Position = UDim2.new(0, 10, 0, 45)
+    inner.Position = UDim2.new(0, 10, 0, 40)
     inner.BackgroundTransparency = 1
-    inner.Parent = accFrame
-    local innerList = Instance.new("UIListLayout")
+    inner.Parent = acc
+    local innerList = Instance.new("UIListLayout", inner)
     innerList.Padding = UDim.new(0, 5)
-    innerList.Parent = inner
 
     local open = true
     header.MouseButton1Click:Connect(function()
         open = not open
-        accFrame.Size = UDim2.new(1, 0, 0, open and (45 + inner.AbsoluteSize.Y) or 45)
+        acc.Size = UDim2.new(1, 0, 0, open and (40 + inner.AbsoluteSize.Y) or 40)
     end)
     inner:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
         inner.Size = UDim2.new(1, -20, 0, inner.AbsoluteSize.Y)
-        if open then accFrame.Size = UDim2.new(1, 0, 0, 45 + inner.AbsoluteSize.Y) end
+        if open then acc.Size = UDim2.new(1, 0, 0, 40 + inner.AbsoluteSize.Y) end
     end)
     return inner
 end
 
--- KONEKSI (Auto Farm Simulation)
-local KoneksiInner = createAccordion("Koneksi")
+-- Accordion 1: Koneksi
+local KoneksiInner = createAcc("Koneksi", 2)
 local BtnHubungkan = Instance.new("TextButton")
 BtnHubungkan.Size = UDim2.new(1, 0, 0, 45)
-BtnHubungkan.BackgroundColor3 = Color3.fromRGB(35, 40, 55)
+BtnHubungkan.BackgroundColor3 = Color3.fromRGB(30, 36, 48)
 BtnHubungkan.Text = "  Hubungkan ke game\n  Pakai satu akun pindah world"
-BtnHubungkan.TextColor3 = COLORS.TextWhite
+BtnHubungkan.TextColor3 = C.TextG
 BtnHubungkan.Font = Enum.Font.Gotham
-BtnHubungkan.TextSize = 12
+BtnHubungkan.TextSize = 11
 BtnHubungkan.TextXAlignment = Enum.TextXAlignment.Left
 BtnHubungkan.Parent = KoneksiInner
 Instance.new("UICorner", BtnHubungkan).CornerRadius = UDim.new(0, 4)
+local Arrow1 = Instance.new("TextLabel", BtnHubungkan)
+Arrow1.Size = UDim2.new(0, 20, 1, 0)
+Arrow1.Position = UDim2.new(1, -25, 0, 0)
+Arrow1.BackgroundTransparency = 1
+Arrow1.Text = ">"
+Arrow1.TextColor3 = C.Accent
+Arrow1.TextSize = 14
 
--- CONFIG
-local ConfigInner = createAccordion("Config")
-local StatusText = Instance.new("TextLabel")
-StatusText.Size = UDim2.new(1, 0, 0, 30)
-StatusText.BackgroundTransparency = 1
-StatusText.Text = "  Status\n  Config simuat"
-StatusText.TextColor3 = COLORS.TextGray
-StatusText.Font = Enum.Font.Gotham
-StatusText.TextSize = 11
-StatusText.TextXAlignment = Enum.TextXAlignment.Left
-StatusText.TextYAlignment = Enum.TextYAlignment.Top
-StatusText.Parent = ConfigInner
+-- Accordion 2: Config
+local ConfigInner = createAcc("Config", 3)
+local StatusTxt = Instance.new("TextLabel")
+StatusTxt.Size = UDim2.new(1, 0, 0, 30)
+StatusTxt.BackgroundTransparency = 1
+StatusTxt.Text = "  Status\n  Config simuat"
+StatusTxt.TextColor3 = C.TextG
+StatusTxt.Font = Enum.Font.Gotham
+StatusTxt.TextSize = 11
+StatusTxt.TextXAlignment = Enum.TextXAlignment.Left
+StatusTxt.TextYAlignment = Enum.TextYAlignment.Top
+StatusTxt.Parent = ConfigInner
 
--- TOGGLE AUTO SAVE
-local ToggleFrame = Instance.new("Frame")
-ToggleFrame.Size = UDim2.new(1, 0, 0, 40)
-ToggleFrame.BackgroundTransparency = 1
-ToggleFrame.Parent = ConfigInner
+-- Toggle
+local TFrame = Instance.new("Frame")
+TFrame.Size = UDim2.new(1, 0, 0, 45)
+TFrame.BackgroundColor3 = Color3.fromRGB(30, 36, 48)
+TFrame.Parent = ConfigInner
+Instance.new("UICorner", TFrame).CornerRadius = UDim.new(0, 4)
 
-local ToggleText = Instance.new("TextLabel")
-ToggleText.Size = UDim2.new(1, -50, 1, 0)
-ToggleText.BackgroundTransparency = 1
-ToggleText.Text = "  Auto Save Config\n  simpan pengaturan otomatis.."
-ToggleText.TextColor3 = COLORS.TextWhite
-ToggleText.Font = Enum.Font.Gotham
-ToggleText.TextSize = 12
-ToggleText.TextXAlignment = Enum.TextXAlignment.Left
-ToggleText.TextYAlignment = Enum.TextYAlignment.Center
-ToggleText.Parent = ToggleFrame
+local TText = Instance.new("TextLabel")
+TText.Size = UDim2.new(1, -50, 1, 0)
+TText.Position = UDim2.new(0, 10, 0, 0)
+TText.BackgroundTransparency = 1
+TText.Text = "  Auto Save Config\n  simpan pengaturan otomatis.."
+TText.TextColor3 = C.TextW
+TText.Font = Enum.Font.Gotham
+TText.TextSize = 11
+TText.TextXAlignment = Enum.TextXAlignment.Left
+TText.Parent = TFrame
 
-local ToggleBg = Instance.new("Frame")
-ToggleBg.Size = UDim2.new(0, 40, 0, 20)
-ToggleBg.Position = UDim2.new(1, -45, 0.5, -10)
-ToggleBg.BackgroundColor3 = COLORS.Accent
-ToggleBg.Parent = ToggleFrame
-Instance.new("UICorner", ToggleBg).CornerRadius = UDim.new(1, 0)
+local TBg = Instance.new("Frame")
+TBg.Size = UDim2.new(0, 36, 0, 18)
+TBg.Position = UDim2.new(1, -45, 0.5, -9)
+TBg.BackgroundColor3 = C.Accent
+TBg.Parent = TFrame
+Instance.new("UICorner", TBg).CornerRadius = UDim.new(1, 0)
+local TDot = Instance.new("Frame")
+TDot.Size = UDim2.new(0, 14, 0, 14)
+TDot.Position = UDim2.new(1, -16, 0.5, -7)
+TDot.BackgroundColor3 = C.TextW
+TDot.Parent = TBg
+Instance.new("UICorner", TDot).CornerRadius = UDim.new(1, 0)
 
-local ToggleDot = Instance.new("Frame")
-ToggleDot.Size = UDim2.new(0, 16, 0, 16)
-ToggleDot.Position = UDim2.new(1, -18, 0.5, -8)
-ToggleDot.BackgroundColor3 = COLORS.TextWhite
-ToggleDot.Parent = ToggleBg
-Instance.new("UICorner", ToggleDot).CornerRadius = UDim.new(1, 0)
-
-local isToggled = true
-ToggleBg.MouseButton1Click:Connect(function()
-    isToggled = not isToggled
-    TweenService:Create(ToggleBg, TweenInfo.new(0.2), {BackgroundColor3 = isToggled and COLORS.Accent or Color3.fromRGB(60, 60, 60)}):Play()
-    TweenService:Create(ToggleDot, TweenInfo.new(0.2), {Position = isToggled and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)}):Play()
+local isTog = true
+TBg.MouseButton1Click:Connect(function()
+    isTog = not isTog
+    TweenService:Create(TBg, TweenInfo.new(0.2), {BackgroundColor3 = isTog and C.Accent or Color3.fromRGB(60, 60, 60)}):Play()
+    TweenService:Create(TDot, TweenInfo.new(0.2), {Position = isTog and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)}):Play()
 end)
 
+-- Tombol Simpan
 local BtnSimpan = Instance.new("TextButton")
-BtnSimpan.Size = UDim2.new(1, 0, 0, 35)
-BtnSimpan.BackgroundColor3 = Color3.fromRGB(35, 40, 55)
+BtnSimpan.Size = UDim2.new(1, 0, 0, 40)
+BtnSimpan.BackgroundColor3 = Color3.fromRGB(30, 36, 48)
 BtnSimpan.Text = "  Simpan config sekarang"
-BtnSimpan.TextColor3 = COLORS.TextWhite
+BtnSimpan.TextColor3 = C.TextW
 BtnSimpan.Font = Enum.Font.Gotham
-BtnSimpan.TextSize = 12
+BtnSimpan.TextSize = 11
 BtnSimpan.TextXAlignment = Enum.TextXAlignment.Left
 BtnSimpan.Parent = ConfigInner
 Instance.new("UICorner", BtnSimpan).CornerRadius = UDim.new(0, 4)
+local Arrow2 = Instance.new("TextLabel", BtnSimpan)
+Arrow2.Size = UDim2.new(0, 20, 1, 0)
+Arrow2.Position = UDim2.new(1, -25, 0, 0)
+Arrow2.BackgroundTransparency = 1
+Arrow2.Text = ">"
+Arrow2.TextColor3 = C.Accent
+Arrow2.TextSize = 14
 
--- LOGIKA AUTO FARM DI TOMBOL HUBUNGKAN
+-- ================= LOGIKA AUTO FARM =================
 local isFarming = false
 local farmThread = nil
 
@@ -280,7 +306,7 @@ BtnHubungkan.MouseButton1Click:Connect(function()
     isFarming = not isFarming
     if isFarming then
         BtnHubungkan.Text = "  Auto Farm: ON\n  Sedang bekerja..."
-        BtnHubungkan.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        BtnHubungkan.TextColor3 = Color3.fromRGB(50, 200, 50)
         
         farmThread = task.spawn(function()
             local char = player.Character
@@ -305,7 +331,7 @@ BtnHubungkan.MouseButton1Click:Connect(function()
         end)
     else
         BtnHubungkan.Text = "  Hubungkan ke game\n  Pakai satu akun pindah world"
-        BtnHubungkan.BackgroundColor3 = Color3.fromRGB(35, 40, 55)
+        BtnHubungkan.TextColor3 = C.TextG
         if farmThread then task.cancel(farmThread) end
     end
 end)
