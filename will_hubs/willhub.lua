@@ -1,5 +1,5 @@
 -- ==========================================
--- WillHub - V3 (Tabbed UI)
+-- WillHub - V4 (Complete Farm Edition)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
@@ -26,7 +26,7 @@ local C = {
 }
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "WillHubV3"
+ScreenGui.Name = "WillHubV4"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
@@ -50,8 +50,8 @@ Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 
 -- MAIN WINDOW
 local Main = Instance.new("Frame")
-Main.Size = UDim2.new(0, 500, 0, 320)
-Main.Position = UDim2.new(0.5, -250, 0.5, -160)
+Main.Size = UDim2.new(0, 520, 0, 350)
+Main.Position = UDim2.new(0.5, -260, 0.5, -175)
 Main.BackgroundColor3 = C.BgMain
 Main.Active = true
 Main.Draggable = true
@@ -71,7 +71,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(0, 250, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "⚡ WILLHUB // V3"
+Title.Text = "⚡ WILLHUB // V4"
 Title.TextColor3 = C.Accent
 Title.Font = Enum.Font.Code
 Title.TextSize = 18
@@ -132,7 +132,7 @@ end
 
 local function addTabButton(text, pageName)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 80, 1, 0)
+    btn.Size = UDim2.new(0, 90, 1, 0)
     btn.BackgroundColor3 = C.BgElement
     btn.Text = text
     btn.TextColor3 = C.TextG
@@ -152,9 +152,10 @@ addTabButton("FARM", "Farm")
 addTabButton("STATUS", "Status")
 addTabButton("SETTING", "Setting")
 
+-- COMPONENT: TOGGLE
 local function createToggle(parent, text, callback)
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, -10, 0, 45)
+    frame.Size = UDim2.new(1, -10, 0, 40)
     frame.BackgroundColor3 = C.BgElement
     frame.Parent = parent
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 4)
@@ -199,49 +200,131 @@ local function createToggle(parent, text, callback)
     end)
 end
 
--- LOGIKA FARM
-local clickThread, walkThread, collectThread = nil, nil, nil
+-- COMPONENT: INPUT
+local function createInput(parent, placeholder, default, yPos)
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(1, -10, 0, 35)
+    box.Position = UDim2.new(0, 0, 0, yPos)
+    box.BackgroundColor3 = C.BgElement
+    box.PlaceholderText = placeholder
+    box.Text = default or ""
+    box.TextColor3 = C.TextW
+    box.Font = Enum.Font.Code
+    box.TextSize = 12
+    box.Parent = parent
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 4)
+    return box
+end
 
-createToggle(pFarm, "Fast Punch (Spam Klik)", function(state)
-    if state then
-        clickThread = task.spawn(function()
-            while state do
-                pcall(function()
-                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                    task.wait(0.03)
-                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
-                    task.wait(0.03)
-                end)
-            end
-        end)
-    else
-        if clickThread then task.cancel(clickThread) end
-    end
-end)
+-- ==========================================
+-- TAB FARM
+-- ==========================================
+local radiusBox = createInput(pFarm, "Radius Area (Studs)", "30", 0)
+local breakDelayBox = createInput(pFarm, "Break Delay (Detik)", "0.2", 40)
+local placeDelayBox = createInput(pFarm, "Place Delay (Detik)", "0.5", 80)
 
-createToggle(pFarm, "Auto Walk (Jalan Muter)", function(state)
+-- Variabel Thread
+local breakThread, placeThread, collectThread, walkThread = nil, nil, nil, nil
+local isBreaking, isPlacing, isCollecting, isWalking = false, false, false, false
+
+-- Auto Break
+createToggle(pFarm, "Auto Break (Mecahin Block)", function(state)
+    isBreaking = state
     if state then
-        walkThread = task.spawn(function()
-            while state do
+        breakThread = task.spawn(function()
+            while isBreaking do
                 pcall(function()
                     local char = player.Character
+                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
                     local hum = char and char:FindFirstChildOfClass("Humanoid")
-                    if hum then
-                        hum:MoveTo(char.HumanoidRootPart.Position + Vector3.new(math.random(-20, 20), 0, math.random(-20, 20)))
+                    if hrp and hum then
+                        local maxRadius = tonumber(radiusBox.Text) or 30
+                        local parts = workspace:GetPartBoundsInRadius(hrp.Position, maxRadius)
+                        local targetPart = nil
+                        local shortestDist = maxRadius
+                        
+                        for _, part in pairs(parts) do
+                            if part:IsA("BasePart") and not part:IsDescendantOf(char) and part.Name ~= "Baseplate" and part.Size.Y > 0.2 then
+                                local dist = (part.Position - hrp.Position).Magnitude
+                                if dist < shortestDist then
+                                    shortestDist = dist
+                                    targetPart = part
+                                end
+                            end
+                        end
+
+                        if targetPart then
+                            hum:MoveTo(targetPart.Position)
+                            local bDelay = tonumber(breakDelayBox.Text) or 0.2
+                            task.wait(bDelay + math.random(-2,2)/100)
+                            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                            task.wait(0.02)
+                            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+                        else
+                            hum:MoveTo(hrp.Position + Vector3.new(math.random(-10,10), 0, math.random(-10,10)))
+                            task.wait(0.5)
+                        end
                     end
                 end)
-                task.wait(1.5)
             end
         end)
+        notify("WillHub", "Auto Break ON")
     else
-        if walkThread then task.cancel(walkThread) end
+        if breakThread then task.cancel(breakThread) end
+        notify("WillHub", "Auto Break OFF")
     end
 end)
 
+-- Auto Place
+createToggle(pFarm, "Auto Place (Tanam Block)", function(state)
+    isPlacing = state
+    if state then
+        placeThread = task.spawn(function()
+            while isPlacing do
+                pcall(function()
+                    local char = player.Character
+                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                    local hum = char and char:FindFirstChildOfClass("Humanoid")
+                    if hrp and hum then
+                        -- Cari tool seed di backpack
+                        local bp = player:FindFirstChild("Backpack")
+                        local seed = nil
+                        if bp then
+                            for _, tool in pairs(bp:GetChildren()) do
+                                if tool:IsA("Tool") and (string.find(string.lower(tool.Name), "seed") or string.find(string.lower(tool.Name), "block")) then
+                                    seed = tool
+                                    break
+                                end
+                            end
+                        end
+                        
+                        if seed then
+                            hum:EquipTool(seed)
+                            task.wait(0.2)
+                            -- Klik kanan buat nanem
+                            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
+                            task.wait(0.05)
+                            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
+                            local pDelay = tonumber(placeDelayBox.Text) or 0.5
+                            task.wait(pDelay)
+                        end
+                    end
+                end)
+            end
+        end)
+        notify("WillHub", "Auto Place ON")
+    else
+        if placeThread then task.cancel(placeThread) end
+        notify("WillHub", "Auto Place OFF")
+    end
+end)
+
+-- Auto Collect
 createToggle(pFarm, "Auto Collect (Ambil Drop)", function(state)
+    isCollecting = state
     if state then
         collectThread = task.spawn(function()
-            while state do
+            while isCollecting do
                 pcall(function()
                     local char = player.Character
                     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -260,14 +343,41 @@ createToggle(pFarm, "Auto Collect (Ambil Drop)", function(state)
                 task.wait(0.5)
             end
         end)
+        notify("WillHub", "Auto Collect ON")
     else
         if collectThread then task.cancel(collectThread) end
+        notify("WillHub", "Auto Collect OFF")
     end
 end)
 
--- LOGIKA STATUS
+-- Auto Walk
+createToggle(pFarm, "Auto Walk (Jalan Muter)", function(state)
+    isWalking = state
+    if state then
+        walkThread = task.spawn(function()
+            while isWalking do
+                pcall(function()
+                    local char = player.Character
+                    local hum = char and char:FindFirstChildOfClass("Humanoid")
+                    if hum then
+                        hum:MoveTo(char.HumanoidRootPart.Position + Vector3.new(math.random(-20, 20), 0, math.random(-20, 20)))
+                    end
+                end)
+                task.wait(1.5)
+            end
+        end)
+        notify("WillHub", "Auto Walk ON")
+    else
+        if walkThread then task.cancel(walkThread) end
+        notify("WillHub", "Auto Walk OFF")
+    end
+end)
+
+-- ==========================================
+-- TAB STATUS
+-- ==========================================
 local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Size = UDim2.new(1, -10, 0, 120)
+StatusLabel.Size = UDim2.new(1, -10, 0, 150)
 StatusLabel.BackgroundColor3 = C.BgElement
 StatusLabel.TextColor3 = C.TextW
 StatusLabel.Font = Enum.Font.Code
@@ -287,12 +397,14 @@ RunService.RenderStepped:Connect(function()
         pos = string.format("(%d, %d)", p.X, p.Z)
     end
     StatusLabel.Text = string.format(
-        "=== LIVE STATUS ===\nPosisi : %s\nFast Punch : %s\nAuto Walk : %s\nAuto Collect : %s",
-        pos, clickThread and "AKTIF" or "MATI", walkThread and "AKTIF" or "MATI", collectThread and "AKTIF" or "MATI"
+        "=== LIVE STATUS ===\nPosisi : %s\n\nAuto Break : %s\nAuto Place : %s\nAuto Collect : %s\nAuto Walk : %s",
+        pos, isBreaking and "ON" or "OFF", isPlacing and "ON" or "OFF", isCollecting and "ON" or "OFF", isWalking and "ON" or "OFF"
     )
 end)
 
--- LOGIKA SETTING
+-- ==========================================
+-- TAB SETTING
+-- ==========================================
 local RejoinBtn = Instance.new("TextButton")
 RejoinBtn.Size = UDim2.new(1, -10, 0, 45)
 RejoinBtn.BackgroundColor3 = C.Accent
