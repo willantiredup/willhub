@@ -1,11 +1,9 @@
 -- ==========================================
--- WillHub - V5.1 (Anti-Freeze Patch)
+-- WillHub - V6 (Block Selector)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
-local RunService = game:GetService("RunService")
-local TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
@@ -13,18 +11,8 @@ for _, v in pairs(CoreGui:GetChildren()) do
     if string.find(v.Name, "WillHub") then v:Destroy() end
 end
 
-local C = {
-    BgMain = Color3.fromRGB(13, 15, 23),
-    BgTop = Color3.fromRGB(17, 20, 28),
-    BgElement = Color3.fromRGB(23, 27, 38),
-    Accent = Color3.fromRGB(43, 104, 227),
-    TextW = Color3.fromRGB(255, 255, 255),
-    TextG = Color3.fromRGB(150, 155, 165),
-    Red = Color3.fromRGB(255, 80, 80)
-}
-
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "WillHubV5"
+ScreenGui.Name = "WillHubV6"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
@@ -35,9 +23,9 @@ end
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Size = UDim2.new(0, 40, 0, 40)
 ToggleBtn.Position = UDim2.new(0, 20, 0, 100)
-ToggleBtn.BackgroundColor3 = C.Accent
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(43, 104, 227)
 ToggleBtn.Text = "W"
-ToggleBtn.TextColor3 = C.TextW
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleBtn.Font = Enum.Font.GothamBold
 ToggleBtn.TextSize = 18
 ToggleBtn.Active = true
@@ -46,9 +34,9 @@ ToggleBtn.Parent = ScreenGui
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 
 local Main = Instance.new("Frame")
-Main.Size = UDim2.new(0, 500, 0, 380)
-Main.Position = UDim2.new(0.5, -250, 0.5, -190)
-Main.BackgroundColor3 = C.BgMain
+Main.Size = UDim2.new(0, 500, 0, 400)
+Main.Position = UDim2.new(0.5, -250, 0.5, -200)
+Main.BackgroundColor3 = Color3.fromRGB(13, 15, 23)
 Main.Active = true
 Main.Draggable = true
 Main.ClipsDescendants = true
@@ -59,15 +47,15 @@ ToggleBtn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible e
 
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, 0, 0, 50)
-TopBar.BackgroundColor3 = C.BgTop
+TopBar.BackgroundColor3 = Color3.fromRGB(17, 20, 28)
 TopBar.Parent = Main
 
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(0, 250, 1, 0)
+Title.Size = UDim2.new(0, 300, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "⚡ WILLHUB // V5.1"
-Title.TextColor3 = C.Accent
+Title.Text = "⚡ WILLHUB // V6"
+Title.TextColor3 = Color3.fromRGB(43, 104, 227)
 Title.Font = Enum.Font.Code
 Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -76,15 +64,16 @@ Title.Parent = TopBar
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 30, 0, 30)
 CloseBtn.Position = UDim2.new(1, -45, 0, 10)
-CloseBtn.BackgroundColor3 = C.BgElement
+CloseBtn.BackgroundColor3 = Color3.fromRGB(23, 27, 38)
 CloseBtn.Text = "X"
-CloseBtn.TextColor3 = C.Red
+CloseBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.TextSize = 14
 CloseBtn.Parent = TopBar
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 15)
 CloseBtn.MouseButton1Click:Connect(function() Main.Visible = false end)
 
+-- TAB BAR
 local TabBar = Instance.new("Frame")
 TabBar.Size = UDim2.new(1, -20, 0, 30)
 TabBar.Position = UDim2.new(0, 10, 0, 55)
@@ -113,7 +102,7 @@ local function createPage(name)
     page.Visible = false
     page.Parent = Content
     local list = Instance.new("UIListLayout", page)
-    list.Padding = UDim.new(0, 10)
+    list.Padding = UDim.new(0, 8)
     list.SortOrder = Enum.SortOrder.LayoutOrder
     Pages[name] = page
     return page
@@ -122,17 +111,17 @@ end
 local function switchTab(pageName, btn)
     for _, p in pairs(Pages) do p.Visible = false end
     if Pages[pageName] then Pages[pageName].Visible = true end
-    if activeBtn then TweenService:Create(activeBtn, TweenInfo.new(0.2), {BackgroundColor3 = C.BgElement, TextColor3 = C.TextG}):Play() end
-    TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = C.Accent, TextColor3 = C.TextW}):Play()
+    if activeBtn then TweenService:Create(activeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(23, 27, 38), TextColor3 = Color3.fromRGB(150, 155, 165)}):Play() end
+    TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(43, 104, 227), TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
     activeBtn = btn
 end
 
 local function addTabButton(text, pageName)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 90, 1, 0)
-    btn.BackgroundColor3 = C.BgElement
+    btn.Size = UDim2.new(0, 100, 1, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(23, 27, 38)
     btn.Text = text
-    btn.TextColor3 = C.TextG
+    btn.TextColor3 = Color3.fromRGB(150, 155, 165)
     btn.Font = Enum.Font.Code
     btn.TextSize = 12
     btn.Parent = TabBar
@@ -141,46 +130,96 @@ local function addTabButton(text, pageName)
     return btn
 end
 
+local pBlocks = createPage("Blocks")
 local pFarm = createPage("Farm")
 local pStatus = createPage("Status")
-local pSetting = createPage("Setting")
 
+addTabButton("BLOCKS", "Blocks")
 addTabButton("FARM", "Farm")
 addTabButton("STATUS", "Status")
-addTabButton("SETTING", "Setting")
 
-local function createInput(parent, labelText, defaultText, layoutOrder)
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, 0, 0, 55)
-    frame.BackgroundTransparency = 1
-    frame.LayoutOrder = layoutOrder
-    frame.Parent = parent
-    local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(1, 0, 0, 20)
-    lbl.BackgroundTransparency = 1
-    lbl.Text = labelText
-    lbl.TextColor3 = C.TextG
-    lbl.Font = Enum.Font.GothamBold
-    lbl.TextSize = 12
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    lbl.Parent = frame
-    local box = Instance.new("TextBox")
-    box.Size = UDim2.new(1, 0, 0, 30)
-    box.Position = UDim2.new(0, 0, 0, 25)
-    box.BackgroundColor3 = C.BgElement
-    box.Text = defaultText
-    box.TextColor3 = C.TextW
-    box.Font = Enum.Font.Code
-    box.TextSize = 14
-    box.Parent = frame
-    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 4)
-    return box
-end
+-- SELECTED BLOCK
+local selectedBlock = nil
+local selectedBlockLabel = Instance.new("TextLabel")
+selectedBlockLabel.Size = UDim2.new(1, 0, 0, 30)
+selectedBlockLabel.BackgroundColor3 = Color3.fromRGB(23, 27, 38)
+selectedBlockLabel.Text = "Selected: (None)"
+selectedBlockLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+selectedBlockLabel.Font = Enum.Font.GothamBold
+selectedBlockLabel.TextSize = 13
+selectedBlockLabel.Parent = pBlocks
+Instance.new("UICorner", selectedBlockLabel).CornerRadius = UDim.new(0, 4)
 
+-- SCAN BUTTON
+local ScanBtn = Instance.new("TextButton")
+ScanBtn.Size = UDim2.new(1, 0, 0, 35)
+ScanBtn.BackgroundColor3 = Color3.fromRGB(43, 104, 227)
+ScanBtn.Text = "SCAN BLOCKS AROUND ME"
+ScanBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ScanBtn.Font = Enum.Font.GothamBold
+ScanBtn.TextSize = 13
+ScanBtn.Parent = pBlocks
+Instance.new("UICorner", ScanBtn).CornerRadius = UDim.new(0, 4)
+
+local blockListFrame = Instance.new("Frame")
+blockListFrame.Size = UDim2.new(1, 0, 0, 200)
+blockListFrame.BackgroundTransparency = 1
+blockListFrame.Parent = pBlocks
+local blockList = Instance.new("UIListLayout", blockListFrame)
+blockList.Padding = UDim.new(0, 5)
+blockList.SortOrder = Enum.SortOrder.LayoutOrder
+
+ScanBtn.MouseButton1Click:Connect(function()
+    for _, c in pairs(blockListFrame:GetChildren()) do
+        if c:IsA("TextButton") then c:Destroy() end
+    end
+
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then notify("WillHub", "Karakter belum spawn!") return end
+
+    local uniqueNames = {}
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and v.Name ~= "Baseplate" and v.Name ~= "Terrain" then
+            if v.Size.Y > 0.2 and not v:IsDescendantOf(char) then
+                local dist = (v.Position - hrp.Position).Magnitude
+                if dist <= 100 then
+                    uniqueNames[v.Name] = true
+                end
+            end
+        end
+    end
+
+    local count = 0
+    for name, _ in pairs(uniqueNames) do
+        count = count + 1
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 0, 30)
+        btn.BackgroundColor3 = Color3.fromRGB(23, 27, 38)
+        btn.Text = name
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.Font = Enum.Font.Code
+        btn.TextSize = 12
+        btn.Parent = blockListFrame
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+        btn.MouseButton1Click:Connect(function()
+            selectedBlock = name
+            selectedBlockLabel.Text = "Selected: " .. name
+            selectedBlockLabel.TextColor3 = Color3.fromRGB(50, 200, 50)
+            notify("WillHub", "Target block: " .. name)
+        end)
+    end
+
+    notify("WillHub", "Ketemu " .. count .. " jenis block.")
+end)
+
+-- ==========================================
+-- TAB FARM
+-- ==========================================
 local function createToggle(parent, text, layoutOrder, callback)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 0, 45)
-    frame.BackgroundColor3 = C.BgElement
+    frame.BackgroundColor3 = Color3.fromRGB(23, 27, 38)
     frame.LayoutOrder = layoutOrder
     frame.Parent = parent
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 4)
@@ -189,7 +228,7 @@ local function createToggle(parent, text, layoutOrder, callback)
     lbl.Position = UDim2.new(0, 15, 0, 0)
     lbl.BackgroundTransparency = 1
     lbl.Text = text
-    lbl.TextColor3 = C.TextW
+    lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
     lbl.Font = Enum.Font.Gotham
     lbl.TextSize = 13
     lbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -197,43 +236,40 @@ local function createToggle(parent, text, layoutOrder, callback)
     local bg = Instance.new("TextButton")
     bg.Size = UDim2.new(0, 40, 0, 20)
     bg.Position = UDim2.new(1, -55, 0.5, -10)
-    bg.BackgroundColor3 = C.BgMain
+    bg.BackgroundColor3 = Color3.fromRGB(13, 15, 23)
     bg.Text = ""
     bg.Parent = frame
     Instance.new("UICorner", bg).CornerRadius = UDim.new(1, 0)
     local dot = Instance.new("Frame")
     dot.Size = UDim2.new(0, 14, 0, 14)
     dot.Position = UDim2.new(0, 3, 0.5, -7)
-    dot.BackgroundColor3 = C.TextG
+    dot.BackgroundColor3 = Color3.fromRGB(150, 155, 165)
     dot.Parent = bg
     Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
     local isActive = false
     bg.MouseButton1Click:Connect(function()
         isActive = not isActive
         if isActive then
-            TweenService:Create(bg, TweenInfo.new(0.2), {BackgroundColor3 = C.Accent}):Play()
-            TweenService:Create(dot, TweenInfo.new(0.2), {Position = UDim2.new(1, -17, 0.5, -7), BackgroundColor3 = C.TextW}):Play()
+            TweenService:Create(bg, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(43, 104, 227)}):Play()
+            TweenService:Create(dot, TweenInfo.new(0.2), {Position = UDim2.new(1, -17, 0.5, -7), BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
         else
-            TweenService:Create(bg, TweenInfo.new(0.2), {BackgroundColor3 = C.BgMain}):Play()
-            TweenService:Create(dot, TweenInfo.new(0.2), {Position = UDim2.new(0, 3, 0.5, -7), BackgroundColor3 = C.TextG}):Play()
+            TweenService:Create(bg, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(13, 15, 23)}):Play()
+            TweenService:Create(dot, TweenInfo.new(0.2), {Position = UDim2.new(0, 3, 0.5, -7), BackgroundColor3 = Color3.fromRGB(150, 155, 165)}):Play()
         end
         if callback then callback(isActive) end
     end)
 end
 
--- ==========================================
--- TAB FARM
--- ==========================================
-local radiusBox = createInput(pFarm, "Radius Area (Studs)", "30", 1)
-local breakDelayBox = createInput(pFarm, "Break Delay (Detik)", "0.5", 2) -- Default dibuat lebih lambat biar ga freeze
-local placeDelayBox = createInput(pFarm, "Place Delay (Detik)", "0.8", 3)
+local breakThread = nil
+local isBreaking = false
 
-local breakThread, placeThread, collectThread, walkThread = nil, nil, nil, nil
-local isBreaking, isPlacing, isCollecting, isWalking = false, false, false, false
-
-createToggle(pFarm, "Auto Break (Mecahin)", 4, function(state)
+createToggle(pFarm, "Auto Break (Target Selected)", 1, function(state)
     isBreaking = state
     if state then
+        if not selectedBlock then
+            notify("WillHub", "Pilih block dulu di tab BLOCKS!")
+            return
+        end
         breakThread = task.spawn(function()
             while isBreaking do
                 pcall(function()
@@ -241,170 +277,66 @@ createToggle(pFarm, "Auto Break (Mecahin)", 4, function(state)
                     local hrp = char and char:FindFirstChild("HumanoidRootPart")
                     local hum = char and char:FindFirstChildOfClass("Humanoid")
                     if hrp and hum then
-                        local maxRadius = tonumber(radiusBox.Text) or 30
-                        local parts = workspace:GetPartBoundsInRadius(hrp.Position, maxRadius)
-                        local targetPart, shortestDist = nil, maxRadius
+                        local parts = workspace:GetPartBoundsInRadius(hrp.Position, 50)
+                        local targetPart, shortest = nil, 50
                         for _, part in pairs(parts) do
-                            if part:IsA("BasePart") and not part:IsDescendantOf(char) and part.Name ~= "Baseplate" and part.Size.Y > 0.2 then
-                                local dist = (part.Position - hrp.Position).Magnitude
-                                if dist < shortestDist then shortestDist, targetPart = dist, part end
+                            if part:IsA("BasePart") and not part:IsDescendantOf(char) and part.Name == selectedBlock then
+                                local d = (part.Position - hrp.Position).Magnitude
+                                if d < shortest then shortest, targetPart = d, part end
                             end
                         end
                         if targetPart then
                             hum:MoveTo(targetPart.Position)
-                            local bDelay = tonumber(breakDelayBox.Text) or 0.5
-                            task.wait(bDelay)
-                            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                            task.wait(0.5)
+                            VirtualInputManager:SendMouseButtonEvent(0,0,0,true,game,0)
                             task.wait(0.05)
-                            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
-                            task.wait(0.1) -- Jeda tambahan sebelum scan lagi
+                            VirtualInputManager:SendMouseButtonEvent(0,0,0,false,game,0)
+                            task.wait(0.2)
                         else
-                            hum:MoveTo(hrp.Position + Vector3.new(math.random(-10,10), 0, math.random(-10,10)))
-                            task.wait(0.8)
+                            hum:MoveTo(hrp.Position + Vector3.new(math.random(-10,10),0,math.random(-10,10)))
+                            task.wait(1)
                         end
                     end
                 end)
-                task.wait(0.1) -- WAJIB ADA BIAR GA FREEZE
+                task.wait(0.1)
             end
         end)
-        notify("WillHub", "Auto Break ON")
+        notify("WillHub", "Auto Break ON (Target: " .. selectedBlock .. ")")
     else
         if breakThread then task.cancel(breakThread) end
         notify("WillHub", "Auto Break OFF")
     end
 end)
 
-createToggle(pFarm, "Auto Place (Tanam)", 5, function(state)
-    isPlacing = state
-    if state then
-        placeThread = task.spawn(function()
-            while isPlacing do
-                pcall(function()
-                    local char = player.Character
-                    local hum = char and char:FindFirstChildOfClass("Humanoid")
-                    if hum then
-                        local bp = player:FindFirstChild("Backpack")
-                        local seed = nil
-                        if bp then
-                            for _, tool in pairs(bp:GetChildren()) do
-                                if tool:IsA("Tool") then seed = tool; break end
-                            end
-                        end
-                        if seed then
-                            hum:EquipTool(seed)
-                            task.wait(0.3)
-                            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
-                            task.wait(0.1)
-                            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
-                            task.wait(tonumber(placeDelayBox.Text) or 0.8)
-                        end
-                    end
-                end)
-                task.wait(0.5) -- WAJIB ADA
-            end
-        end)
-        notify("WillHub", "Auto Place ON")
-    else
-        if placeThread then task.cancel(placeThread) end
-        notify("WillHub", "Auto Place OFF")
-    end
-end)
-
-createToggle(pFarm, "Auto Collect (Ambil)", 6, function(state)
-    isCollecting = state
-    if state then
-        collectThread = task.spawn(function()
-            while isCollecting do
-                pcall(function()
-                    local char = player.Character
-                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                    local hum = char and char:FindFirstChildOfClass("Humanoid")
-                    if hrp and hum then
-                        local closest, dist = nil, 30
-                        for _, part in pairs(workspace:GetPartBoundsInRadius(hrp.Position, 30)) do
-                            if part:IsA("BasePart") and not part:IsDescendantOf(char) and part.Name ~= "Baseplate" and part.Size.Magnitude <= 15 then
-                                local d = (part.Position - hrp.Position).Magnitude
-                                if d < dist then dist, closest = d, part end
-                            end
-                        end
-                        if closest then hum:MoveTo(closest.Position) end
-                    end
-                end)
-                task.wait(0.8) -- Jeda scan
-            end
-        end)
-        notify("WillHub", "Auto Collect ON")
-    else
-        if collectThread then task.cancel(collectThread) end
-        notify("WillHub", "Auto Collect OFF")
-    end
-end)
-
-createToggle(pFarm, "Auto Walk (Muter)", 7, function(state)
-    isWalking = state
-    if state then
-        walkThread = task.spawn(function()
-            while isWalking do
-                pcall(function()
-                    local char = player.Character
-                    local hum = char and char:FindFirstChildOfClass("Humanoid")
-                    if hum then hum:MoveTo(char.HumanoidRootPart.Position + Vector3.new(math.random(-20, 20), 0, math.random(-20, 20))) end
-                end)
-                task.wait(2.5) -- Jalan pelan-pelan biar ga nge-lag
-            end
-        end)
-        notify("WillHub", "Auto Walk ON")
-    else
-        if walkThread then task.cancel(walkThread) end
-        notify("WillHub", "Auto Walk OFF")
-    end
-end)
-
--- ==========================================
--- TAB STATUS
--- ==========================================
+-- STATUS TAB
 local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Size = UDim2.new(1, 0, 0, 150)
-StatusLabel.BackgroundColor3 = C.BgElement
-StatusLabel.TextColor3 = C.TextW
+StatusLabel.Size = UDim2.new(1, 0, 0, 100)
+StatusLabel.BackgroundColor3 = Color3.fromRGB(23, 27, 38)
+StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 StatusLabel.Font = Enum.Font.Code
 StatusLabel.TextSize = 12
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 StatusLabel.TextYAlignment = Enum.TextYAlignment.Top
-StatusLabel.Text = "Memuat data..."
+StatusLabel.Text = "Menunggu data..."
 StatusLabel.Parent = pStatus
 Instance.new("UICorner", StatusLabel).CornerRadius = UDim.new(0, 6)
 
-RunService.RenderStepped:Connect(function()
-    if not Main.Visible or not pStatus.Visible then return end
-    local pos = "-"
-    local char = player.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        local p = char.HumanoidRootPart.Position
-        pos = string.format("(%d, %d)", p.X, p.Z)
+task.spawn(function()
+    while true do
+        if pStatus.Visible then
+            local pos = "-"
+            local char = player.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local p = char.HumanoidRootPart.Position
+                pos = string.format("(%d, %d)", p.X, p.Z)
+            end
+            StatusLabel.Text = string.format(
+                "=== STATUS ===\nPosisi : %s\nTarget : %s\nAuto Break : %s",
+                pos, selectedBlock or "None", isBreaking and "ON" or "OFF"
+            )
+        end
+        task.wait(0.5)
     end
-    StatusLabel.Text = string.format(
-        "=== LIVE STATUS ===\nPosisi : %s\n\nAuto Break : %s\nAuto Place : %s\nAuto Collect : %s\nAuto Walk : %s",
-        pos, isBreaking and "ON" or "OFF", isPlacing and "ON" or "OFF", isCollecting and "ON" or "OFF", isWalking and "ON" or "OFF"
-    )
 end)
 
--- ==========================================
--- TAB SETTING
--- ==========================================
-local RejoinBtn = Instance.new("TextButton")
-RejoinBtn.Size = UDim2.new(1, 0, 0, 45)
-RejoinBtn.BackgroundColor3 = C.Accent
-RejoinBtn.Text = "REJOIN SERVER"
-RejoinBtn.TextColor3 = C.TextW
-RejoinBtn.Font = Enum.Font.GothamBold
-RejoinBtn.TextSize = 13
-RejoinBtn.Parent = pSetting
-Instance.new("UICorner", RejoinBtn).CornerRadius = UDim.new(0, 4)
-RejoinBtn.MouseButton1Click:Connect(function()
-    notify("WillHub", "Sedang Rejoin...")
-    task.wait(1)
-    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
-end)
-
-switchTab("Farm", TabBar:GetChildren()[1])
+switchTab("Blocks", TabBar:GetChildren()[1])
