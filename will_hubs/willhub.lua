@@ -1,5 +1,5 @@
 -- ==========================================
--- WillHub - V4 (Complete Farm Edition)
+-- WillHub - V5 (Clean & Neat Farm Edition)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
@@ -21,12 +21,11 @@ local C = {
     Accent = Color3.fromRGB(43, 104, 227),
     TextW = Color3.fromRGB(255, 255, 255),
     TextG = Color3.fromRGB(150, 155, 165),
-    Red = Color3.fromRGB(255, 80, 80),
-    Green = Color3.fromRGB(50, 200, 50)
+    Red = Color3.fromRGB(255, 80, 80)
 }
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "WillHubV4"
+ScreenGui.Name = "WillHubV5"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
@@ -50,8 +49,8 @@ Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 
 -- MAIN WINDOW
 local Main = Instance.new("Frame")
-Main.Size = UDim2.new(0, 520, 0, 350)
-Main.Position = UDim2.new(0.5, -260, 0.5, -175)
+Main.Size = UDim2.new(0, 500, 0, 380)
+Main.Position = UDim2.new(0.5, -250, 0.5, -190)
 Main.BackgroundColor3 = C.BgMain
 Main.Active = true
 Main.Draggable = true
@@ -71,7 +70,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(0, 250, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "⚡ WILLHUB // V4"
+Title.Text = "⚡ WILLHUB // V5"
 Title.TextColor3 = C.Accent
 Title.Font = Enum.Font.Code
 Title.TextSize = 18
@@ -118,6 +117,12 @@ local function createPage(name)
     page.CanvasSize = UDim2.new(0, 0, 0, 0)
     page.Visible = false
     page.Parent = Content
+    
+    -- AUTO LAYOUT BIAR RAPI
+    local list = Instance.new("UIListLayout", page)
+    list.Padding = UDim.new(0, 10)
+    list.SortOrder = Enum.SortOrder.LayoutOrder
+    
     Pages[name] = page
     return page
 end
@@ -152,28 +157,60 @@ addTabButton("FARM", "Farm")
 addTabButton("STATUS", "Status")
 addTabButton("SETTING", "Setting")
 
--- COMPONENT: TOGGLE
-local function createToggle(parent, text, callback)
+-- COMPONENT: INPUT (RAPI & ADA LABELNYA)
+local function createInput(parent, labelText, defaultText, layoutOrder)
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, -10, 0, 40)
+    frame.Size = UDim2.new(1, 0, 0, 55)
+    frame.BackgroundTransparency = 1
+    frame.LayoutOrder = layoutOrder
+    frame.Parent = parent
+    
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, 0, 0, 20)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = labelText
+    lbl.TextColor3 = C.TextG
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextSize = 12
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = frame
+    
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(1, 0, 0, 30)
+    box.Position = UDim2.new(0, 0, 0, 25)
+    box.BackgroundColor3 = C.BgElement
+    box.Text = defaultText
+    box.TextColor3 = C.TextW
+    box.Font = Enum.Font.Code
+    box.TextSize = 14
+    box.Parent = frame
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 4)
+    return box
+end
+
+-- COMPONENT: TOGGLE
+local function createToggle(parent, text, layoutOrder, callback)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 0, 45)
     frame.BackgroundColor3 = C.BgElement
+    frame.LayoutOrder = layoutOrder
     frame.Parent = parent
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 4)
     
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(1, -60, 1, 0)
-    lbl.Position = UDim2.new(0, 10, 0, 0)
+    lbl.Position = UDim2.new(0, 15, 0, 0)
     lbl.BackgroundTransparency = 1
     lbl.Text = text
     lbl.TextColor3 = C.TextW
     lbl.Font = Enum.Font.Gotham
-    lbl.TextSize = 12
+    lbl.TextSize = 13
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = frame
     
     local bg = Instance.new("TextButton")
     bg.Size = UDim2.new(0, 40, 0, 20)
-    bg.Position = UDim2.new(1, -50, 0.5, -10)
+    bg.Position = UDim2.new(1, -55, 0.5, -10)
     bg.BackgroundColor3 = C.BgMain
     bg.Text = ""
     bg.Parent = frame
@@ -200,34 +237,17 @@ local function createToggle(parent, text, callback)
     end)
 end
 
--- COMPONENT: INPUT
-local function createInput(parent, placeholder, default, yPos)
-    local box = Instance.new("TextBox")
-    box.Size = UDim2.new(1, -10, 0, 35)
-    box.Position = UDim2.new(0, 0, 0, yPos)
-    box.BackgroundColor3 = C.BgElement
-    box.PlaceholderText = placeholder
-    box.Text = default or ""
-    box.TextColor3 = C.TextW
-    box.Font = Enum.Font.Code
-    box.TextSize = 12
-    box.Parent = parent
-    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 4)
-    return box
-end
-
 -- ==========================================
 -- TAB FARM
 -- ==========================================
-local radiusBox = createInput(pFarm, "Radius Area (Studs)", "30", 0)
-local breakDelayBox = createInput(pFarm, "Break Delay (Detik)", "0.2", 40)
-local placeDelayBox = createInput(pFarm, "Place Delay (Detik)", "0.5", 80)
+local radiusBox = createInput(pFarm, "Radius Area (Studs)", "30", 1)
+local breakDelayBox = createInput(pFarm, "Break Delay (Detik)", "0.2", 2)
+local placeDelayBox = createInput(pFarm, "Place Delay (Detik)", "0.5", 3)
 
 local breakThread, placeThread, collectThread, walkThread = nil, nil, nil, nil
 local isBreaking, isPlacing, isCollecting, isWalking = false, false, false, false
 
--- Auto Break
-createToggle(pFarm, "Auto Break (Mecahin Block)", function(state)
+createToggle(pFarm, "Auto Break (Mecahin)", 4, function(state)
     isBreaking = state
     if state then
         breakThread = task.spawn(function()
@@ -239,16 +259,12 @@ createToggle(pFarm, "Auto Break (Mecahin Block)", function(state)
                     if hrp and hum then
                         local maxRadius = tonumber(radiusBox.Text) or 30
                         local parts = workspace:GetPartBoundsInRadius(hrp.Position, maxRadius)
-                        local targetPart = nil
-                        local shortestDist = maxRadius
+                        local targetPart, shortestDist = nil, maxRadius
                         
                         for _, part in pairs(parts) do
                             if part:IsA("BasePart") and not part:IsDescendantOf(char) and part.Name ~= "Baseplate" and part.Size.Y > 0.2 then
                                 local dist = (part.Position - hrp.Position).Magnitude
-                                if dist < shortestDist then
-                                    shortestDist = dist
-                                    targetPart = part
-                                end
+                                if dist < shortestDist then shortestDist, targetPart = dist, part end
                             end
                         end
 
@@ -274,36 +290,29 @@ createToggle(pFarm, "Auto Break (Mecahin Block)", function(state)
     end
 end)
 
--- Auto Place
-createToggle(pFarm, "Auto Place (Tanam Block)", function(state)
+createToggle(pFarm, "Auto Place (Tanam)", 5, function(state)
     isPlacing = state
     if state then
         placeThread = task.spawn(function()
             while isPlacing do
                 pcall(function()
                     local char = player.Character
-                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
                     local hum = char and char:FindFirstChildOfClass("Humanoid")
-                    if hrp and hum then
+                    if hum then
                         local bp = player:FindFirstChild("Backpack")
                         local seed = nil
                         if bp then
                             for _, tool in pairs(bp:GetChildren()) do
-                                if tool:IsA("Tool") and (string.find(string.lower(tool.Name), "seed") or string.find(string.lower(tool.Name), "block")) then
-                                    seed = tool
-                                    break
-                                end
+                                if tool:IsA("Tool") then seed = tool; break end
                             end
                         end
-                        
                         if seed then
                             hum:EquipTool(seed)
                             task.wait(0.2)
                             VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
                             task.wait(0.05)
                             VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
-                            local pDelay = tonumber(placeDelayBox.Text) or 0.5
-                            task.wait(pDelay)
+                            task.wait(tonumber(placeDelayBox.Text) or 0.5)
                         end
                     end
                 end)
@@ -316,8 +325,7 @@ createToggle(pFarm, "Auto Place (Tanam Block)", function(state)
     end
 end)
 
--- Auto Collect
-createToggle(pFarm, "Auto Collect (Ambil Drop)", function(state)
+createToggle(pFarm, "Auto Collect (Ambil)", 6, function(state)
     isCollecting = state
     if state then
         collectThread = task.spawn(function()
@@ -347,8 +355,7 @@ createToggle(pFarm, "Auto Collect (Ambil Drop)", function(state)
     end
 end)
 
--- Auto Walk
-createToggle(pFarm, "Auto Walk (Jalan Muter)", function(state)
+createToggle(pFarm, "Auto Walk (Muter)", 7, function(state)
     isWalking = state
     if state then
         walkThread = task.spawn(function()
@@ -356,9 +363,7 @@ createToggle(pFarm, "Auto Walk (Jalan Muter)", function(state)
                 pcall(function()
                     local char = player.Character
                     local hum = char and char:FindFirstChildOfClass("Humanoid")
-                    if hum then
-                        hum:MoveTo(char.HumanoidRootPart.Position + Vector3.new(math.random(-20, 20), 0, math.random(-20, 20)))
-                    end
+                    if hum then hum:MoveTo(char.HumanoidRootPart.Position + Vector3.new(math.random(-20, 20), 0, math.random(-20, 20))) end
                 end)
                 task.wait(1.5)
             end
@@ -374,7 +379,7 @@ end)
 -- TAB STATUS
 -- ==========================================
 local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Size = UDim2.new(1, -10, 0, 150)
+StatusLabel.Size = UDim2.new(1, 0, 0, 150)
 StatusLabel.BackgroundColor3 = C.BgElement
 StatusLabel.TextColor3 = C.TextW
 StatusLabel.Font = Enum.Font.Code
@@ -403,7 +408,7 @@ end)
 -- TAB SETTING
 -- ==========================================
 local RejoinBtn = Instance.new("TextButton")
-RejoinBtn.Size = UDim2.new(1, -10, 0, 45)
+RejoinBtn.Size = UDim2.new(1, 0, 0, 45)
 RejoinBtn.BackgroundColor3 = C.Accent
 RejoinBtn.Text = "REJOIN SERVER"
 RejoinBtn.TextColor3 = C.TextW
