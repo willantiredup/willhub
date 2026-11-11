@@ -1,7 +1,8 @@
 -- ==========================================
--- WillHub - Farm UI (Accordion Edition - FIXED)
+-- WillHub - Farm UI (Accordion + Resizable)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
@@ -29,7 +30,7 @@ local function notify(title, text)
     pcall(function() game:GetService("StarterGui"):SetCore("SendNotification", {Title = title, Text = text, Duration = 3}) end)
 end
 
--- FLOATING TOGGLE (Tombol Buka Tutup)
+-- FLOATING TOGGLE
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Size = UDim2.new(0, 40, 0, 40)
 ToggleBtn.Position = UDim2.new(0, 20, 0, 100)
@@ -45,16 +46,59 @@ Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 
 -- MAIN WINDOW
 local Main = Instance.new("Frame")
-Main.Size = UDim2.new(0, 650, 0, 420)
-Main.Position = UDim2.new(0.5, -325, 0.5, -210)
+Main.Size = UDim2.new(0, 600, 0, 400) -- Ukuran awal
+Main.Position = UDim2.new(0.5, -300, 0.5, -200)
 Main.BackgroundColor3 = C.BgMain
 Main.Active = true
 Main.Draggable = true
 Main.ClipsDescendants = true
 Main.Parent = ScreenGui
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
+local MainStroke = Instance.new("UIStroke", Main)
+MainStroke.Color = Color3.fromRGB(40, 45, 60)
 
 ToggleBtn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
+
+-- ==========================================
+-- RESIZE HANDLE (TARIK POJOK KANAN BAWAH)
+-- ==========================================
+local ResizeHandle = Instance.new("TextButton")
+ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
+ResizeHandle.Position = UDim2.new(1, -20, 1, -20)
+ResizeHandle.BackgroundColor3 = C.Accent
+ResizeHandle.Text = "◢"
+ResizeHandle.TextColor3 = C.TextW
+ResizeHandle.Font = Enum.Font.GothamBold
+ResizeHandle.TextSize = 12
+ResizeHandle.ZIndex = 10
+ResizeHandle.Parent = Main
+Instance.new("UICorner", ResizeHandle).CornerRadius = UDim.new(0, 4)
+
+local resizing = false
+local startSize, startMousePos
+
+ResizeHandle.MouseButton1Down:Connect(function()
+    resizing = true
+    startSize = Main.AbsoluteSize
+    startMousePos = UserInputService:GetMouseLocation()
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local deltaX = UserInputService:GetMouseLocation().X - startMousePos.X
+        local deltaY = UserInputService:GetMouseLocation().Y - startMousePos.Y
+        -- Batas minimal (350x250) dan maksimal (900x700)
+        local newWidth = math.clamp(startSize.X + deltaX, 350, 900)
+        local newHeight = math.clamp(startSize.Y + deltaY, 250, 700)
+        Main.Size = UDim2.new(0, newWidth, 0, newHeight)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        resizing = false
+    end
+end)
 
 -- TOP BAR
 local TopBar = Instance.new("Frame")
@@ -87,7 +131,7 @@ CloseBtn.MouseButton1Click:Connect(function() Main.Visible = false end)
 
 -- CONTENT SCROLL
 local Scroll = Instance.new("ScrollingFrame")
-Scroll.Size = UDim2.new(1, -20, 1, -60)
+Scroll.Size = UDim2.new(1, -20, 1, -70)
 Scroll.Position = UDim2.new(0, 10, 0, 55)
 Scroll.BackgroundTransparency = 1
 Scroll.ScrollBarThickness = 4
@@ -162,12 +206,11 @@ local function createAccordion(title)
         header.Text = "  |  " .. title .. (open and "  v" or "  >")
         updateSize()
     end)
-    
     innerList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSize)
     return inner
 end
 
--- FUNGSI TOGGLE (DIPERBAIKI PAKAI TEXTBUTTON)
+-- FUNGSI TOGGLE
 local function createToggle(parent, text, callback)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 0, 40)
@@ -186,7 +229,6 @@ local function createToggle(parent, text, callback)
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = frame
     
-    -- PAKAI TEXTBUTTON BIAR BISA DIKLIK
     local bg = Instance.new("TextButton")
     bg.Size = UDim2.new(0, 40, 0, 20)
     bg.Position = UDim2.new(1, -50, 0.5, -10)
