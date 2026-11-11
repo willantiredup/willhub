@@ -1,5 +1,5 @@
 -- ==========================================
--- WillHub - V5 (Clean & Neat Farm Edition)
+-- WillHub - V5 (Direct Execute)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
@@ -118,7 +118,6 @@ local function createPage(name)
     page.Visible = false
     page.Parent = Content
     
-    -- AUTO LAYOUT BIAR RAPI
     local list = Instance.new("UIListLayout", page)
     list.Padding = UDim.new(0, 10)
     list.SortOrder = Enum.SortOrder.LayoutOrder
@@ -157,7 +156,7 @@ addTabButton("FARM", "Farm")
 addTabButton("STATUS", "Status")
 addTabButton("SETTING", "Setting")
 
--- COMPONENT: INPUT (RAPI & ADA LABELNYA)
+-- COMPONENT: INPUT
 local function createInput(parent, labelText, defaultText, layoutOrder)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 0, 55)
@@ -237,9 +236,7 @@ local function createToggle(parent, text, layoutOrder, callback)
     end)
 end
 
--- ==========================================
 -- TAB FARM
--- ==========================================
 local radiusBox = createInput(pFarm, "Radius Area (Studs)", "30", 1)
 local breakDelayBox = createInput(pFarm, "Break Delay (Detik)", "0.2", 2)
 local placeDelayBox = createInput(pFarm, "Place Delay (Detik)", "0.5", 3)
@@ -260,14 +257,12 @@ createToggle(pFarm, "Auto Break (Mecahin)", 4, function(state)
                         local maxRadius = tonumber(radiusBox.Text) or 30
                         local parts = workspace:GetPartBoundsInRadius(hrp.Position, maxRadius)
                         local targetPart, shortestDist = nil, maxRadius
-                        
                         for _, part in pairs(parts) do
                             if part:IsA("BasePart") and not part:IsDescendantOf(char) and part.Name ~= "Baseplate" and part.Size.Y > 0.2 then
                                 local dist = (part.Position - hrp.Position).Magnitude
                                 if dist < shortestDist then shortestDist, targetPart = dist, part end
                             end
                         end
-
                         if targetPart then
                             hum:MoveTo(targetPart.Position)
                             local bDelay = tonumber(breakDelayBox.Text) or 0.2
@@ -375,9 +370,7 @@ createToggle(pFarm, "Auto Walk (Muter)", 7, function(state)
     end
 end)
 
--- ==========================================
 -- TAB STATUS
--- ==========================================
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Size = UDim2.new(1, 0, 0, 150)
 StatusLabel.BackgroundColor3 = C.BgElement
@@ -404,9 +397,7 @@ RunService.RenderStepped:Connect(function()
     )
 end)
 
--- ==========================================
 -- TAB SETTING
--- ==========================================
 local RejoinBtn = Instance.new("TextButton")
 RejoinBtn.Size = UDim2.new(1, 0, 0, 45)
 RejoinBtn.BackgroundColor3 = C.Accent
