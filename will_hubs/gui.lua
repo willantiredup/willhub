@@ -1,8 +1,12 @@
--- WillHub GUI (100% SkyP Replica)
+-- ==========================================
+-- WillHub GUI (SkyP Replica - 100% Functional)
+-- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
-local player = game:GetService("Players").LocalPlayer
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
 if CoreGui:FindFirstChild("WillHubModern") then CoreGui.WillHubModern:Destroy() end
 
@@ -13,7 +17,9 @@ local C = {
     Accent = Color3.fromRGB(43, 104, 227),
     TextW = Color3.fromRGB(255, 255, 255),
     TextG = Color3.fromRGB(130, 140, 160),
-    TextD = Color3.fromRGB(80, 90, 110)
+    TextD = Color3.fromRGB(80, 90, 110),
+    Green = Color3.fromRGB(50, 200, 50),
+    Red = Color3.fromRGB(200, 50, 50)
 }
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -21,7 +27,16 @@ ScreenGui.Name = "WillHubModern"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
--- Main Window (Lebih lebar sesuai screenshot)
+-- UI NOTIFICATION FUNCTION
+local function notify(title, text)
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = title, Text = text, Duration = 3
+        })
+    end)
+end
+
+-- MAIN WINDOW
 local Main = Instance.new("Frame")
 Main.Size = UDim2.new(0, 680, 0, 400)
 Main.Position = UDim2.new(0.5, -340, 0.5, -200)
@@ -39,7 +54,6 @@ Sidebar.Size = UDim2.new(0, 170, 1, 0)
 Sidebar.BackgroundColor3 = C.BgSidebar
 Sidebar.Parent = Main
 Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 6)
--- Fix ujung kanan sidebar biar ga melengkung
 local SideFix = Instance.new("Frame", Sidebar)
 SideFix.Size = UDim2.new(0, 10, 1, 0)
 SideFix.Position = UDim2.new(1, -10, 0, 0)
@@ -86,38 +100,6 @@ SearchBox.TextSize = 11
 SearchBox.TextXAlignment = Enum.TextXAlignment.Left
 SearchBox.Parent = SearchFrame
 
--- Sidebar Menu Items (Posisi Y disesuaikan persis)
-local function addMenu(text, y, isHeader, isActive)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 150, 0, 26)
-    btn.Position = UDim2.new(0, 10, 0, y)
-    btn.BackgroundTransparency = 1
-    btn.Text = "  " .. text
-    btn.TextColor3 = isHeader and C.TextD or (isActive and C.TextW or C.TextG)
-    btn.Font = isHeader and Enum.Font.GothamBold or Enum.Font.Gotham
-    btn.TextSize = isHeader and 11 or 13
-    btn.TextXAlignment = Enum.TextXAlignment.Left
-    btn.Parent = Sidebar
-    
-    if isActive then
-        btn.BackgroundTransparency = 0
-        btn.BackgroundColor3 = C.Accent
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
-    end
-    return btn
-end
-
-addMenu("Pabrik", 110, false, false)
-addMenu("Titik Drop", 140, false, false)
-addMenu("Dirt Farm", 170, false, false)
-addMenu("FITUR", 210, true, false)
-addMenu("KEAMANAN", 235, true, false)
-addMenu("SETELAN", 260, true, false)
-addMenu("Pengaturan", 290, false, false)
-addMenu("Koneksi", 320, false, true) -- Active
-addMenu("Discord", 350, false, false)
-addMenu("Observasi", 380, false, false)
-
 -- ================= CONTENT AREA =================
 local Content = Instance.new("Frame")
 Content.Size = UDim2.new(1, -170, 1, 0)
@@ -136,7 +118,6 @@ ContentPad.PaddingLeft = UDim.new(0, 15)
 ContentPad.PaddingRight = UDim.new(0, 15)
 ContentPad.Parent = Content
 
--- Banner Referensi Game
 local Banner = Instance.new("Frame")
 Banner.Size = UDim2.new(1, 0, 0, 45)
 Banner.BackgroundColor3 = C.BgElement
@@ -144,7 +125,6 @@ Banner.LayoutOrder = 1
 Banner.Parent = Content
 Instance.new("UICorner", Banner).CornerRadius = UDim.new(0, 4)
 
--- Garis biru kecil di kiri banner
 local BannerLine = Instance.new("Frame")
 BannerLine.Size = UDim2.new(0, 3, 0.8, 0)
 BannerLine.Position = UDim2.new(0, 0, 0.1, 0)
@@ -163,175 +143,278 @@ BannerText.TextXAlignment = Enum.TextXAlignment.Left
 BannerText.TextYAlignment = Enum.TextYAlignment.Center
 BannerText.Parent = Banner
 
--- Fungsi Accordion
-local function createAcc(title, layoutOrder)
-    local acc = Instance.new("Frame")
-    acc.Size = UDim2.new(1, 0, 0, 40)
-    acc.BackgroundColor3 = C.BgElement
-    acc.LayoutOrder = layoutOrder
-    acc.ClipsDescendants = true
-    acc.Parent = Content
-    Instance.new("UICorner", acc).CornerRadius = UDim.new(0, 4)
-
-    local line = Instance.new("Frame", acc)
-    line.Size = UDim2.new(0, 3, 0, 15)
-    line.Position = UDim2.new(0, 10, 0.5, -7.5)
-    line.BackgroundColor3 = C.Accent
-
-    local header = Instance.new("TextButton")
-    header.Size = UDim2.new(1, 0, 0, 40)
-    header.BackgroundTransparency = 1
-    header.Text = "    " .. title
-    header.TextColor3 = C.TextW
-    header.Font = Enum.Font.GothamBold
-    header.TextSize = 12
-    header.TextXAlignment = Enum.TextXAlignment.Left
-    header.Parent = acc
-
-    local inner = Instance.new("Frame")
-    inner.Size = UDim2.new(1, -20, 0, 0)
-    inner.Position = UDim2.new(0, 10, 0, 40)
-    inner.BackgroundTransparency = 1
-    inner.Parent = acc
-    local innerList = Instance.new("UIListLayout", inner)
-    innerList.Padding = UDim.new(0, 5)
-
-    local open = true
-    header.MouseButton1Click:Connect(function()
-        open = not open
-        acc.Size = UDim2.new(1, 0, 0, open and (40 + inner.AbsoluteSize.Y) or 40)
-    end)
-    inner:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-        inner.Size = UDim2.new(1, -20, 0, inner.AbsoluteSize.Y)
-        if open then acc.Size = UDim2.new(1, 0, 0, 40 + inner.AbsoluteSize.Y) end
-    end)
-    return inner
+-- TAB CONTAINER
+local Pages = {}
+local function createPage(name)
+    local page = Instance.new("Frame")
+    page.Size = UDim2.new(1, 0, 0, 300)
+    page.BackgroundTransparency = 1
+    page.LayoutOrder = 2
+    page.Visible = false
+    page.Parent = Content
+    Pages[name] = page
+    return page
 end
 
--- Accordion 1: Koneksi
-local KoneksiInner = createAcc("Koneksi", 2)
-local BtnHubungkan = Instance.new("TextButton")
-BtnHubungkan.Size = UDim2.new(1, 0, 0, 45)
-BtnHubungkan.BackgroundColor3 = Color3.fromRGB(30, 36, 48)
-BtnHubungkan.Text = "  Hubungkan ke game\n  Pakai satu akun pindah world"
-BtnHubungkan.TextColor3 = C.TextG
-BtnHubungkan.Font = Enum.Font.Gotham
-BtnHubungkan.TextSize = 11
-BtnHubungkan.TextXAlignment = Enum.TextXAlignment.Left
-BtnHubungkan.Parent = KoneksiInner
-Instance.new("UICorner", BtnHubungkan).CornerRadius = UDim.new(0, 4)
-local Arrow1 = Instance.new("TextLabel", BtnHubungkan)
-Arrow1.Size = UDim2.new(0, 20, 1, 0)
-Arrow1.Position = UDim2.new(1, -25, 0, 0)
-Arrow1.BackgroundTransparency = 1
-Arrow1.Text = ">"
-Arrow1.TextColor3 = C.Accent
-Arrow1.TextSize = 14
+local PagePabrik = createPage("Pabrik")
+local PageTitikDrop = createPage("TitikDrop")
+local PageDirtFarm = createPage("DirtFarm")
+local PagePengaturan = createPage("Pengaturan")
+local PageKoneksi = createPage("Koneksi")
+local PageDiscord = createPage("Discord")
+local PageObservasi = createPage("Observasi")
 
--- Accordion 2: Config
-local ConfigInner = createAcc("Config", 3)
-local StatusTxt = Instance.new("TextLabel")
-StatusTxt.Size = UDim2.new(1, 0, 0, 30)
-StatusTxt.BackgroundTransparency = 1
-StatusTxt.Text = "  Status\n  Config simuat"
-StatusTxt.TextColor3 = C.TextG
-StatusTxt.Font = Enum.Font.Gotham
-StatusTxt.TextSize = 11
-StatusTxt.TextXAlignment = Enum.TextXAlignment.Left
-StatusTxt.TextYAlignment = Enum.TextYAlignment.Top
-StatusTxt.Parent = ConfigInner
+-- FUNGSI SWITCH TAB
+local activeBtn = nil
+local function switchTab(pageName, btn)
+    for _, p in pairs(Pages) do p.Visible = false end
+    if Pages[pageName] then Pages[pageName].Visible = true end
+    
+    if activeBtn then
+        activeBtn.BackgroundTransparency = 1
+        activeBtn.TextColor3 = C.TextG
+    end
+    btn.BackgroundTransparency = 0
+    btn.BackgroundColor3 = C.Accent
+    btn.TextColor3 = C.TextW
+    activeBtn = btn
+end
 
--- Toggle
-local TFrame = Instance.new("Frame")
-TFrame.Size = UDim2.new(1, 0, 0, 45)
-TFrame.BackgroundColor3 = Color3.fromRGB(30, 36, 48)
-TFrame.Parent = ConfigInner
-Instance.new("UICorner", TFrame).CornerRadius = UDim.new(0, 4)
+-- SIDEBAR MENU BUTTONS
+local function addMenu(text, y, isHeader, pageName)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 150, 0, 26)
+    btn.Position = UDim2.new(0, 10, 0, y)
+    btn.BackgroundTransparency = 1
+    btn.Text = "  " .. text
+    btn.TextColor3 = isHeader and C.TextD or C.TextG
+    btn.Font = isHeader and Enum.Font.GothamBold or Enum.Font.Gotham
+    btn.TextSize = isHeader and 11 or 13
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.Parent = Sidebar
+    
+    if not isHeader and pageName then
+        btn.MouseButton1Click:Connect(function() switchTab(pageName, btn) end)
+    end
+    return btn
+end
 
-local TText = Instance.new("TextLabel")
-TText.Size = UDim2.new(1, -50, 1, 0)
-TText.Position = UDim2.new(0, 10, 0, 0)
-TText.BackgroundTransparency = 1
-TText.Text = "  Auto Save Config\n  simpan pengaturan otomatis.."
-TText.TextColor3 = C.TextW
-TText.Font = Enum.Font.Gotham
-TText.TextSize = 11
-TText.TextXAlignment = Enum.TextXAlignment.Left
-TText.Parent = TFrame
+addMenu("Pabrik", 110, false, "Pabrik")
+addMenu("Titik Drop", 140, false, "TitikDrop")
+addMenu("Dirt Farm", 170, false, "DirtFarm")
+addMenu("FITUR", 210, true, nil)
+addMenu("KEAMANAN", 235, true, nil)
+addMenu("SETELAN", 260, true, nil)
+addMenu("Pengaturan", 290, false, "Pengaturan")
+addMenu("Koneksi", 320, false, "Koneksi")
+addMenu("Discord", 350, false, "Discord")
+addMenu("Observasi", 380, false, "Observasi")
 
-local TBg = Instance.new("Frame")
-TBg.Size = UDim2.new(0, 36, 0, 18)
-TBg.Position = UDim2.new(1, -45, 0.5, -9)
-TBg.BackgroundColor3 = C.Accent
-TBg.Parent = TFrame
-Instance.new("UICorner", TBg).CornerRadius = UDim.new(1, 0)
-local TDot = Instance.new("Frame")
-TDot.Size = UDim2.new(0, 14, 0, 14)
-TDot.Position = UDim2.new(1, -16, 0.5, -7)
-TDot.BackgroundColor3 = C.TextW
-TDot.Parent = TBg
-Instance.new("UICorner", TDot).CornerRadius = UDim.new(1, 0)
+-- ================= FUNGSI UI ELEMENTS =================
+local function createToggle(parent, text, yPos, callback)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, -20, 0, 40)
+    frame.Position = UDim2.new(0, 10, 0, yPos)
+    frame.BackgroundColor3 = C.BgElement
+    frame.Parent = parent
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 4)
 
-local isTog = true
-TBg.MouseButton1Click:Connect(function()
-    isTog = not isTog
-    TweenService:Create(TBg, TweenInfo.new(0.2), {BackgroundColor3 = isTog and C.Accent or Color3.fromRGB(60, 60, 60)}):Play()
-    TweenService:Create(TDot, TweenInfo.new(0.2), {Position = isTog and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)}):Play()
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, -60, 1, 0)
+    lbl.Position = UDim2.new(0, 10, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = text
+    lbl.TextColor3 = C.TextW
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextSize = 12
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = frame
+
+    local bg = Instance.new("Frame")
+    bg.Size = UDim2.new(0, 36, 0, 18)
+    bg.Position = UDim2.new(1, -45, 0.5, -9)
+    bg.BackgroundColor3 = C.TextG
+    bg.Parent = frame
+    Instance.new("UICorner", bg).CornerRadius = UDim.new(1, 0)
+
+    local dot = Instance.new("Frame")
+    dot.Size = UDim2.new(0, 14, 0, 14)
+    dot.Position = UDim2.new(0, 2, 0.5, -7)
+    dot.BackgroundColor3 = C.TextW
+    dot.Parent = bg
+    Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
+
+    local isActive = false
+    bg.MouseButton1Click:Connect(function()
+        isActive = not isActive
+        TweenService:Create(bg, TweenInfo.new(0.2), {BackgroundColor3 = isActive and C.Accent or C.TextG}):Play()
+        TweenService:Create(dot, TweenInfo.new(0.2), {Position = isActive and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)}):Play()
+        if callback then callback(isActive) end
+    end)
+end
+
+local function createButton(parent, text, yPos, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -20, 0, 40)
+    btn.Position = UDim2.new(0, 10, 0, yPos)
+    btn.BackgroundColor3 = C.BgElement
+    btn.Text = "  " .. text
+    btn.TextColor3 = C.TextW
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 12
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.Parent = parent
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+    btn.MouseButton1Click:Connect(function() if callback then callback() end end)
+    return btn
+end
+
+-- ================= ISI MENU: PABRIK =================
+local clickThread = nil
+createToggle(PagePabrik, "Auto Clicker (Pabrik)", 10, function(state)
+    if state then
+        notify("Pabrik", "Auto Clicker AKTIF")
+        clickThread = task.spawn(function()
+            while state do
+                pcall(function()
+                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                    task.wait(0.05)
+                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+                    task.wait(0.1)
+                end)
+            end
+        end)
+    else
+        notify("Pabrik", "Auto Clicker MATI")
+        if clickThread then task.cancel(clickThread) end
+    end
 end)
 
--- Tombol Simpan
-local BtnSimpan = Instance.new("TextButton")
-BtnSimpan.Size = UDim2.new(1, 0, 0, 40)
-BtnSimpan.BackgroundColor3 = Color3.fromRGB(30, 36, 48)
-BtnSimpan.Text = "  Simpan config sekarang"
-BtnSimpan.TextColor3 = C.TextW
-BtnSimpan.Font = Enum.Font.Gotham
-BtnSimpan.TextSize = 11
-BtnSimpan.TextXAlignment = Enum.TextXAlignment.Left
-BtnSimpan.Parent = ConfigInner
-Instance.new("UICorner", BtnSimpan).CornerRadius = UDim.new(0, 4)
-local Arrow2 = Instance.new("TextLabel", BtnSimpan)
-Arrow2.Size = UDim2.new(0, 20, 1, 0)
-Arrow2.Position = UDim2.new(1, -25, 0, 0)
-Arrow2.BackgroundTransparency = 1
-Arrow2.Text = ">"
-Arrow2.TextColor3 = C.Accent
-Arrow2.TextSize = 14
+-- ================= ISI MENU: TITIK DROP =================
+local dropY = 10
+local function createTextBox(parent, placeholder, yPos, callback)
+    local tb = Instance.new("TextBox")
+    tb.Size = UDim2.new(1, -20, 0, 35)
+    tb.Position = UDim2.new(0, 10, 0, yPos)
+    tb.BackgroundColor3 = C.BgElement
+    tb.PlaceholderText = placeholder
+    tb.Text = ""
+    tb.TextColor3 = C.TextW
+    tb.Font = Enum.Font.Gotham
+    tb.TextSize = 12
+    tb.Parent = parent
+    Instance.new("UICorner", tb).CornerRadius = UDim.new(0, 4)
+    return tb
+end
 
--- ================= LOGIKA AUTO FARM =================
-local isFarming = false
-local farmThread = nil
+local tpX = createTextBox(PageTitikDrop, "X Coordinate (Contoh: 0)", 10)
+local tpY = createTextBox(PageTitikDrop, "Y Coordinate (Contoh: 50)", 50)
+local tpZ = createTextBox(PageTitikDrop, "Z Coordinate (Contoh: 0)", 90)
 
-BtnHubungkan.MouseButton1Click:Connect(function()
-    isFarming = not isFarming
-    if isFarming then
-        BtnHubungkan.Text = "  Auto Farm: ON\n  Sedang bekerja..."
-        BtnHubungkan.TextColor3 = Color3.fromRGB(50, 200, 50)
-        
-        farmThread = task.spawn(function()
+createButton(PageTitikDrop, "TELEPORT SEKARANG", 135, function()
+    if tpX.Text and tpY.Text and tpZ.Text then
+        local x, y, z = tonumber(tpX.Text), tonumber(tpY.Text), tonumber(tpZ.Text)
+        if x and y and z then
             local char = player.Character
-            local hum = char and char:FindFirstChildOfClass("Humanoid")
-            while isFarming do
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = CFrame.new(x, y, z)
+                notify("Teleport", "Berhasil ke " .. x .. ", " .. y .. ", " .. z)
+            end
+        else
+            notify("Error", "Koordinat harus berupa angka!")
+        end
+    end
+end)
+
+-- ================= ISI MENU: DIRT FARM =================
+local farmThread = nil
+createToggle(PageDirtFarm, "Auto Farm (Jalan & Pukul)", 10, function(state)
+    if state then
+        notify("Dirt Farm", "Auto Farm AKTIF")
+        farmThread = task.spawn(function()
+            while state do
                 pcall(function()
-                    if not char or not char.Parent then
-                        char = player.Character
-                        hum = char and char:FindFirstChildOfClass("Humanoid")
-                    end
+                    local char = player.Character
+                    local hum = char and char:FindFirstChildOfClass("Humanoid")
                     if hum then
                         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
                         task.wait(0.05)
                         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
                         task.wait(0.1)
-                        local moveToPos = char.HumanoidRootPart.Position + Vector3.new(math.random(-20,20), 0, math.random(-20,20))
-                        hum:MoveTo(moveToPos)
+                        hum:MoveTo(char.HumanoidRootPart.Position + Vector3.new(math.random(-15,15), 0, math.random(-15,15)))
                         task.wait(1)
                     end
                 end)
             end
         end)
     else
-        BtnHubungkan.Text = "  Hubungkan ke game\n  Pakai satu akun pindah world"
-        BtnHubungkan.TextColor3 = C.TextG
+        notify("Dirt Farm", "Auto Farm MATI")
         if farmThread then task.cancel(farmThread) end
     end
 end)
+
+-- ================= ISI MENU: PENGATURAN =================
+local speedBox = createTextBox(PagePengaturan, "WalkSpeed (Contoh: 50)", 10)
+createButton(PagePengaturan, "TERAPKAN SPEED", 55, function()
+    local speed = tonumber(speedBox.Text)
+    if speed then
+        local char = player.Character
+        if char and char:FindFirstChildOfClass("Humanoid") then
+            char:FindFirstChildOfClass("Humanoid").WalkSpeed = speed
+            notify("Speed", "WalkSpeed diubah ke " .. speed)
+        end
+    else
+        notify("Error", "Masukkan angka yang valid!")
+    end
+end)
+
+-- ================= ISI MENU: KONEKSI =================
+createButton(PageKoneksi, "HUBUNGKAN ULANG (REJOIN)", 10, function()
+    notify("Koneksi", "Sedang melakukan Rejoin...")
+    task.wait(1)
+    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+end)
+
+-- ================= ISI MENU: DISCORD =================
+createButton(PageDiscord, "COPY LINK DISCORD", 10, function()
+    pcall(function()
+        setclipboard("https://discord.gg/willhub")
+        notify("Discord", "Link berhasil di-copy ke clipboard!")
+    end)
+end)
+
+-- ================= ISI MENU: OBSERVASI (ESP) =================
+local espThread = nil
+createToggle(PageObservasi, "Player ESP (Highlight)", 10, function(state)
+    if state then
+        notify("Observasi", "ESP AKTIF")
+        local espFolder = Instance.new("Folder", workspace)
+        espFolder.Name = "WillHubESP"
+        
+        espThread = task.spawn(function()
+            while state do
+                pcall(function()
+                    for _, p in pairs(Players:GetPlayers()) do
+                        if p ~= player and p.Character and not espFolder:FindFirstChild(p.Name) then
+                            local hl = Instance.new("Highlight", espFolder)
+                            hl.Name = p.Name
+                            hl.Adornee = p.Character
+                            hl.FillColor = Color3.fromRGB(255, 0, 0)
+                            hl.FillTransparency = 0.5
+                        end
+                    end
+                end)
+                task.wait(2)
+            end
+        end)
+    else
+        notify("Observasi", "ESP MATI")
+        if espThread then task.cancel(espThread) end
+        if workspace:FindFirstChild("WillHubESP") then
+            workspace.WillHubESP:Destroy()
+        end
+    end
+end)
+
+-- START DEFAULT
+switchTab("Pabrik", Sidebar:GetChildren()[4]) -- Otomatis buka Pabrik
