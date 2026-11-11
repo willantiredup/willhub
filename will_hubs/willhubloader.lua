@@ -1,16 +1,10 @@
---[[
-    WillHub Loader
-    Ganti GITHUB_USER & REPO sesuai punya kamu.
-    File utama yang di-fetch : willhub/willhub.lua
-]]
-
 local GITHUB_USER = "willantiredup"
 local REPO        = "willhub"
 local BRANCH      = "main"
-local FILE        = "willhub.lua"
+local FILE        = "will_hubs/willhub.lua"
 
 local URL = ("https://raw.githubusercontent.com/%s/%s/%s/%s")
-    :format("willantiredup", REPO, BRANCH, FILE)
+    :format(GITHUB_USER, REPO, BRANCH, FILE) -- Perhatikan: pakai GITHUB_USER, bukan teks mentah
 
 local ok, err = pcall(function()
     local src = game:HttpGet(URL, true)
@@ -22,11 +16,4 @@ end)
 
 if not ok then
     warn("[WillHub Loader] " .. tostring(err))
-    pcall(function()
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "WillHub Loader",
-            Text  = "Gagal load: " .. tostring(err),
-            Duration = 5,
-        })
-    end)
 end
