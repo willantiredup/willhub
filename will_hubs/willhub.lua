@@ -1,5 +1,5 @@
 -- ==========================================
--- WillHub - Cyberpunk Edition (Fully Working + Resizable)
+-- WillHub - Cyberpunk Edition (Ultimate Fix)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
@@ -20,7 +20,6 @@ local C = {
     TextW = Color3.fromRGB(255, 255, 255),
     TextG = Color3.fromRGB(150, 150, 170),
     Red = Color3.fromRGB(255, 80, 80),
-    Green = Color3.fromRGB(50, 200, 50)
 }
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -35,7 +34,7 @@ local function notify(title, text)
 end
 
 -- ==========================================
--- 1. FLOATING TOGGLE BUTTON (BUKA/TUTUP UI)
+-- 1. FLOATING TOGGLE BUTTON (BUKA/TUTUP)
 -- ==========================================
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Name = "FloatingToggle"
@@ -67,7 +66,7 @@ local MainStroke = Instance.new("UIStroke", Main)
 MainStroke.Color = C.NeonPurple
 MainStroke.Thickness = 2
 
--- Logic Buka/Tutup (Klik vs Geser)
+-- Logika Buka/Tutup (Klik vs Geser)
 local clickTime = 0
 local startPos = Vector2.new(0,0)
 ToggleBtn.MouseButton1Down:Connect(function() clickTime = tick(); startPos = ToggleBtn.AbsolutePosition end)
@@ -77,7 +76,7 @@ ToggleBtn.MouseButton1Up:Connect(function()
     end
 end)
 
--- Resize Handle (Tarik Ujung Kanan Bawah)
+-- Resize Handle (Tarik Pojok Kanan Bawah)
 local ResizeHandle = Instance.new("TextButton")
 ResizeHandle.Size = UDim2.new(0, 15, 0, 15)
 ResizeHandle.Position = UDim2.new(1, -15, 1, -15)
@@ -106,7 +105,7 @@ UserInputService.InputEnded:Connect(function(input)
 end)
 
 -- ==========================================
--- 3. UI LAYOUT (TOP BAR & TABS)
+-- 3. TOP BAR & TABS
 -- ==========================================
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, 0, 0, 40)
@@ -152,30 +151,29 @@ Content.Parent = Main
 
 local Pages = {}
 local activeBtn = nil
+
+-- Fungsi Bikin Halaman
 local function createPage(name)
-    local page = Instance.new("Frame")
+    local page = Instance.new("ScrollingFrame")
     page.Size = UDim2.new(1, 0, 1, 0)
     page.BackgroundTransparency = 1
+    page.ScrollBarThickness = 4
+    page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    page.CanvasSize = UDim2.new(0, 0, 0, 0)
     page.Visible = false
     page.Parent = Content
     
-    -- Gunakan ScrollFrame biar rapi dan ga tumpang tindih
-    local scroll = Instance.new("ScrollingFrame")
-    scroll.Size = UDim2.new(1, 0, 1, 0)
-    scroll.BackgroundTransparency = 1
-    scroll.ScrollBarThickness = 4
-    scroll.Parent = page
-    
-    local list = Instance.new("UIListLayout", scroll)
+    local list = Instance.new("UIListLayout", page)
     list.Padding = UDim.new(0, 8)
+    list.SortOrder = Enum.SortOrder.LayoutOrder
     
-    Pages[name] = {Page = page, Scroll = scroll, List = list}
+    Pages[name] = page
     return page
 end
 
 local function switchTab(pageName, btn)
-    for _, p in pairs(Pages) do p.Page.Visible = false end
-    if Pages[pageName] then Pages[pageName].Page.Visible = true end
+    for _, p in pairs(Pages) do p.Visible = false end
+    if Pages[pageName] then Pages[pageName].Visible = true end
     if activeBtn then TweenService:Create(activeBtn, TweenInfo.new(0.2), {BackgroundColor3 = C.BgElement, TextColor3 = C.TextG}):Play() end
     TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = C.NeonPurple, TextColor3 = C.TextW}):Play()
     activeBtn = btn
@@ -203,13 +201,13 @@ addTabButton("TELEPORT", "Teleport")
 addTabButton("SETTINGS", "Settings")
 
 -- ==========================================
--- 4. KOMPONEN UI (TOGGLE, INPUT, BUTTON)
+-- 4. KOMPONEN UI (SUDAH RAPI)
 -- ==========================================
-local function createToggle(parentPage, text, callback)
+local function createToggle(parent, text, callback)
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, -10, 0, 45)
+    frame.Size = UDim2.new(1, -10, 0, 40)
     frame.BackgroundColor3 = C.BgElement
-    frame.Parent = parentPage.Scroll
+    frame.Parent = parent
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 4)
     
     local lbl = Instance.new("TextLabel")
@@ -253,10 +251,9 @@ local function createToggle(parentPage, text, callback)
         end
         if callback then callback(isActive) end
     end)
-    return isActive
 end
 
-local function createInput(parentPage, placeholder, default)
+local function createInput(parent, placeholder, default)
     local box = Instance.new("TextBox")
     box.Size = UDim2.new(1, -10, 0, 35)
     box.BackgroundColor3 = C.BgElement
@@ -265,12 +262,12 @@ local function createInput(parentPage, placeholder, default)
     box.TextColor3 = C.TextW
     box.Font = Enum.Font.Code
     box.TextSize = 12
-    box.Parent = parentPage.Scroll
+    box.Parent = parent
     Instance.new("UICorner", box).CornerRadius = UDim.new(0, 4)
     return box
 end
 
-local function createButton(parentPage, text, callback)
+local function createButton(parent, text, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 35)
     btn.BackgroundColor3 = C.BgElement
@@ -278,7 +275,7 @@ local function createButton(parentPage, text, callback)
     btn.TextColor3 = C.NeonCyan
     btn.Font = Enum.Font.Code
     btn.TextSize = 13
-    btn.Parent = parentPage.Scroll
+    btn.Parent = parent
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
     local stroke = Instance.new("UIStroke", btn)
     stroke.Color = C.NeonCyan
@@ -288,45 +285,46 @@ local function createButton(parentPage, text, callback)
 end
 
 -- ==========================================
--- 5. ISI TAB FARM
+-- 5. ISI TAB FARM (TARGET BLOCK & SETTINGS)
 -- ==========================================
--- Target Block UI
-local targetFrame = Instance.new("Frame")
-targetFrame.Size = UDim2.new(1, -10, 0, 35)
-targetFrame.BackgroundColor3 = C.BgElement
-targetFrame.Parent = pFarm.Scroll
-Instance.new("UICorner", targetFrame).CornerRadius = UDim.new(0, 4)
+-- Frame Khusus Target Block
+local blockFrame = Instance.new("Frame")
+blockFrame.Size = UDim2.new(1, -10, 0, 80)
+blockFrame.BackgroundColor3 = C.BgElement
+blockFrame.Parent = pFarm
+Instance.new("UICorner", blockFrame).CornerRadius = UDim.new(0, 4)
 
 local lblTarget = Instance.new("TextLabel")
-lblTarget.Size = UDim2.new(1, -100, 1, 0)
+lblTarget.Size = UDim2.new(1, -80, 0, 25)
 lblTarget.Position = UDim2.new(0, 10, 0, 0)
 lblTarget.BackgroundTransparency = 1
-lblTarget.Text = "Target: (Semua)"
+lblTarget.Text = "Target: (Semua Block)"
 lblTarget.TextColor3 = C.NeonCyan
 lblTarget.Font = Enum.Font.GothamBold
 lblTarget.TextSize = 12
 lblTarget.TextXAlignment = Enum.TextXAlignment.Left
-lblTarget.Parent = targetFrame
+lblTarget.Parent = blockFrame
 
 local refreshBtn = Instance.new("TextButton")
-refreshBtn.Size = UDim2.new(0, 80, 0, 25)
-refreshBtn.Position = UDim2.new(1, -85, 0.5, -12.5)
-refreshBtn.BackgroundColor3 = C.BgMain
+refreshBtn.Size = UDim2.new(0, 65, 0, 20)
+refreshBtn.Position = UDim2.new(1, -75, 0, 3)
+refreshBtn.BackgroundColor3 = C.NeonPurple
 refreshBtn.Text = "REFRESH"
 refreshBtn.TextColor3 = C.TextW
 refreshBtn.Font = Enum.Font.Code
-refreshBtn.TextSize = 11
-refreshBtn.Parent = targetFrame
+refreshBtn.TextSize = 10
+refreshBtn.Parent = blockFrame
 Instance.new("UICorner", refreshBtn).CornerRadius = UDim.new(0, 4)
 
 local blockScroll = Instance.new("ScrollingFrame")
-blockScroll.Size = UDim2.new(1, -10, 0, 80)
+blockScroll.Size = UDim2.new(1, -10, 1, -30)
+blockScroll.Position = UDim2.new(0, 5, 0, 25)
 blockScroll.BackgroundTransparency = 1
 blockScroll.ScrollBarThickness = 3
-blockScroll.Parent = pFarm.Scroll
+blockScroll.Parent = blockFrame
 local blockList = Instance.new("UIListLayout", blockScroll)
-blockList.Padding = UDim.new(0, 5)
 blockList.FillDirection = Enum.FillDirection.Horizontal
+blockList.Padding = UDim.new(0, 5)
 
 local selectedBlock = ""
 local function refreshBlocks()
@@ -341,8 +339,8 @@ local function refreshBlocks()
         for _, tool in pairs(bp:GetChildren()) do
             if tool:IsA("Tool") then
                 local btn = Instance.new("TextButton")
-                btn.Size = UDim2.new(0, 100, 0, 25)
-                btn.BackgroundColor3 = C.BgElement
+                btn.Size = UDim2.new(0, 85, 0, 25)
+                btn.BackgroundColor3 = C.BgMain
                 btn.Text = tool.Name
                 btn.TextColor3 = C.TextW
                 btn.Font = Enum.Font.Code
@@ -353,7 +351,7 @@ local function refreshBlocks()
                     selectedBlock = tool.Name
                     lblTarget.Text = "Target: " .. selectedBlock
                     for _, b in pairs(blockScroll:GetChildren()) do
-                        if b:IsA("TextButton") then b.BackgroundColor3 = C.BgElement end
+                        if b:IsA("TextButton") then b.BackgroundColor3 = C.BgMain end
                     end
                     btn.BackgroundColor3 = C.NeonPurple
                 end)
@@ -364,14 +362,14 @@ end
 refreshBtn.MouseButton1Click:Connect(function() refreshBlocks(); notify("WillHub", "Tas di-refresh!") end)
 task.spawn(refreshBlocks)
 
-local areaInput = createInput(pFarm, "Radius (Studs)", "30")
-local breakInput = createInput(pFarm, "Break Delay (s)", "0.2")
-local placeInput = createInput(pFarm, "Place Delay (s)", "0.5")
+local areaInput = createInput(pFarm, "Radius Area (Studs)", "30")
+local breakInput = createInput(pFarm, "Break Delay (Detik)", "0.2")
+local placeInput = createInput(pFarm, "Place Delay (Detik)", "0.5")
 
 local isFastPunch = false
 createToggle(pFarm, "Fast Punch (Spam Klik)", function(state) isFastPunch = state end)
 
--- Auto Break Loop
+-- AUTO BREAK LOOP
 local farmThread = nil
 createToggle(pFarm, "Auto Break (Radius)", function(state)
     if state then
@@ -391,7 +389,7 @@ createToggle(pFarm, "Auto Break (Radius)", function(state)
                     local shortestDist = maxRadius
 
                     for _, part in pairs(parts) do
-                        if not part:IsDescendantOf(char) and part.Name ~= "Baseplate" and part.Size.Y > 0.5 then
+                        if part:IsA("BasePart") and not part:IsDescendantOf(char) and part.Name ~= "Baseplate" and part.Size.Y > 0.2 then
                             local isMatch = false
                             if selectedBlock == "" then isMatch = true
                             elseif string.find(string.lower(part.Name), string.lower(selectedBlock)) then isMatch = true end
@@ -410,7 +408,7 @@ createToggle(pFarm, "Auto Break (Radius)", function(state)
                         hum:MoveTo(targetPart.Position)
                         local bDelay = tonumber(breakInput.Text) or 0.2
                         if isFastPunch then bDelay = 0.01 end
-                        task.wait(bDelay + math.random(-5,5)/100)
+                        task.wait(bDelay + math.random(-2,2)/100)
                         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
                         task.wait(0.02)
                         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
@@ -427,7 +425,7 @@ createToggle(pFarm, "Auto Break (Radius)", function(state)
     end
 end)
 
--- Auto Collect Loop
+-- AUTO COLLECT LOOP
 local collectThread = nil
 createToggle(pFarm, "Auto Collect (Ambil Jatuhan)", function(state)
     if state then
@@ -443,12 +441,12 @@ createToggle(pFarm, "Auto Collect (Ambil Jatuhan)", function(state)
 
                     local closestItem = nil
                     local shortestDist = 40
-
-                    -- Scan seluruh workspace buat cari part kecil
-                    for _, part in pairs(workspace:GetDescendants()) do
+                    
+                    -- Pakai radius biar ga lag (scan 40 studs sekitar)
+                    local parts = workspace:GetPartBoundsInRadius(hrp.Position, 40)
+                    for _, part in pairs(parts) do
                         if part:IsA("BasePart") and not part:IsDescendantOf(char) and part.Name ~= "Baseplate" then
-                            -- Filter ukuran item drop (biasanya kecil)
-                            if part.Size.X <= 5 and part.Size.Y <= 5 and part.Size.Z <= 5 then
+                            if part.Size.Magnitude <= 15 then -- Filter ukuran item drop
                                 local dist = (part.Position - hrp.Position).Magnitude
                                 if dist < shortestDist then
                                     shortestDist = dist
@@ -473,7 +471,7 @@ createToggle(pFarm, "Auto Collect (Ambil Jatuhan)", function(state)
 end)
 
 -- ==========================================
--- 6. ISI TAB TELEPORT & SETTINGS
+-- 6. TAB TELEPORT & SETTINGS
 -- ==========================================
 local tpX = createInput(pTeleport, "Coord X", "0")
 local tpY = createInput(pTeleport, "Coord Y", "50")
