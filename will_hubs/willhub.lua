@@ -1,5 +1,5 @@
 -- ==========================================
--- WillHub - V5 (Direct Execute)
+-- WillHub - V5.1 (Anti-Freeze Patch)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
@@ -9,7 +9,6 @@ local TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--- Hapus semua UI lama
 for _, v in pairs(CoreGui:GetChildren()) do
     if string.find(v.Name, "WillHub") then v:Destroy() end
 end
@@ -33,7 +32,6 @@ local function notify(title, text)
     pcall(function() game:GetService("StarterGui"):SetCore("SendNotification", {Title = title, Text = text, Duration = 3}) end)
 end
 
--- FLOATING TOGGLE BUTTON
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Size = UDim2.new(0, 40, 0, 40)
 ToggleBtn.Position = UDim2.new(0, 20, 0, 100)
@@ -47,7 +45,6 @@ ToggleBtn.Draggable = true
 ToggleBtn.Parent = ScreenGui
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 
--- MAIN WINDOW
 local Main = Instance.new("Frame")
 Main.Size = UDim2.new(0, 500, 0, 380)
 Main.Position = UDim2.new(0.5, -250, 0.5, -190)
@@ -60,7 +57,6 @@ Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
 
 ToggleBtn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
 
--- TOP BAR
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, 0, 0, 50)
 TopBar.BackgroundColor3 = C.BgTop
@@ -70,7 +66,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(0, 250, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "⚡ WILLHUB // V5"
+Title.Text = "⚡ WILLHUB // V5.1"
 Title.TextColor3 = C.Accent
 Title.Font = Enum.Font.Code
 Title.TextSize = 18
@@ -89,7 +85,6 @@ CloseBtn.Parent = TopBar
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 15)
 CloseBtn.MouseButton1Click:Connect(function() Main.Visible = false end)
 
--- TABS SETUP
 local TabBar = Instance.new("Frame")
 TabBar.Size = UDim2.new(1, -20, 0, 30)
 TabBar.Position = UDim2.new(0, 10, 0, 55)
@@ -117,11 +112,9 @@ local function createPage(name)
     page.CanvasSize = UDim2.new(0, 0, 0, 0)
     page.Visible = false
     page.Parent = Content
-    
     local list = Instance.new("UIListLayout", page)
     list.Padding = UDim.new(0, 10)
     list.SortOrder = Enum.SortOrder.LayoutOrder
-    
     Pages[name] = page
     return page
 end
@@ -156,14 +149,12 @@ addTabButton("FARM", "Farm")
 addTabButton("STATUS", "Status")
 addTabButton("SETTING", "Setting")
 
--- COMPONENT: INPUT
 local function createInput(parent, labelText, defaultText, layoutOrder)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 0, 55)
     frame.BackgroundTransparency = 1
     frame.LayoutOrder = layoutOrder
     frame.Parent = parent
-    
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(1, 0, 0, 20)
     lbl.BackgroundTransparency = 1
@@ -173,7 +164,6 @@ local function createInput(parent, labelText, defaultText, layoutOrder)
     lbl.TextSize = 12
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = frame
-    
     local box = Instance.new("TextBox")
     box.Size = UDim2.new(1, 0, 0, 30)
     box.Position = UDim2.new(0, 0, 0, 25)
@@ -187,7 +177,6 @@ local function createInput(parent, labelText, defaultText, layoutOrder)
     return box
 end
 
--- COMPONENT: TOGGLE
 local function createToggle(parent, text, layoutOrder, callback)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 0, 45)
@@ -195,7 +184,6 @@ local function createToggle(parent, text, layoutOrder, callback)
     frame.LayoutOrder = layoutOrder
     frame.Parent = parent
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 4)
-    
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(1, -60, 1, 0)
     lbl.Position = UDim2.new(0, 15, 0, 0)
@@ -206,7 +194,6 @@ local function createToggle(parent, text, layoutOrder, callback)
     lbl.TextSize = 13
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = frame
-    
     local bg = Instance.new("TextButton")
     bg.Size = UDim2.new(0, 40, 0, 20)
     bg.Position = UDim2.new(1, -55, 0.5, -10)
@@ -214,14 +201,12 @@ local function createToggle(parent, text, layoutOrder, callback)
     bg.Text = ""
     bg.Parent = frame
     Instance.new("UICorner", bg).CornerRadius = UDim.new(1, 0)
-    
     local dot = Instance.new("Frame")
     dot.Size = UDim2.new(0, 14, 0, 14)
     dot.Position = UDim2.new(0, 3, 0.5, -7)
     dot.BackgroundColor3 = C.TextG
     dot.Parent = bg
     Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
-    
     local isActive = false
     bg.MouseButton1Click:Connect(function()
         isActive = not isActive
@@ -236,10 +221,12 @@ local function createToggle(parent, text, layoutOrder, callback)
     end)
 end
 
+-- ==========================================
 -- TAB FARM
+-- ==========================================
 local radiusBox = createInput(pFarm, "Radius Area (Studs)", "30", 1)
-local breakDelayBox = createInput(pFarm, "Break Delay (Detik)", "0.2", 2)
-local placeDelayBox = createInput(pFarm, "Place Delay (Detik)", "0.5", 3)
+local breakDelayBox = createInput(pFarm, "Break Delay (Detik)", "0.5", 2) -- Default dibuat lebih lambat biar ga freeze
+local placeDelayBox = createInput(pFarm, "Place Delay (Detik)", "0.8", 3)
 
 local breakThread, placeThread, collectThread, walkThread = nil, nil, nil, nil
 local isBreaking, isPlacing, isCollecting, isWalking = false, false, false, false
@@ -265,17 +252,19 @@ createToggle(pFarm, "Auto Break (Mecahin)", 4, function(state)
                         end
                         if targetPart then
                             hum:MoveTo(targetPart.Position)
-                            local bDelay = tonumber(breakDelayBox.Text) or 0.2
-                            task.wait(bDelay + math.random(-2,2)/100)
+                            local bDelay = tonumber(breakDelayBox.Text) or 0.5
+                            task.wait(bDelay)
                             VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                            task.wait(0.02)
+                            task.wait(0.05)
                             VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+                            task.wait(0.1) -- Jeda tambahan sebelum scan lagi
                         else
                             hum:MoveTo(hrp.Position + Vector3.new(math.random(-10,10), 0, math.random(-10,10)))
-                            task.wait(0.5)
+                            task.wait(0.8)
                         end
                     end
                 end)
+                task.wait(0.1) -- WAJIB ADA BIAR GA FREEZE
             end
         end)
         notify("WillHub", "Auto Break ON")
@@ -303,14 +292,15 @@ createToggle(pFarm, "Auto Place (Tanam)", 5, function(state)
                         end
                         if seed then
                             hum:EquipTool(seed)
-                            task.wait(0.2)
+                            task.wait(0.3)
                             VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
-                            task.wait(0.05)
+                            task.wait(0.1)
                             VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
-                            task.wait(tonumber(placeDelayBox.Text) or 0.5)
+                            task.wait(tonumber(placeDelayBox.Text) or 0.8)
                         end
                     end
                 end)
+                task.wait(0.5) -- WAJIB ADA
             end
         end)
         notify("WillHub", "Auto Place ON")
@@ -340,7 +330,7 @@ createToggle(pFarm, "Auto Collect (Ambil)", 6, function(state)
                         if closest then hum:MoveTo(closest.Position) end
                     end
                 end)
-                task.wait(0.5)
+                task.wait(0.8) -- Jeda scan
             end
         end)
         notify("WillHub", "Auto Collect ON")
@@ -360,7 +350,7 @@ createToggle(pFarm, "Auto Walk (Muter)", 7, function(state)
                     local hum = char and char:FindFirstChildOfClass("Humanoid")
                     if hum then hum:MoveTo(char.HumanoidRootPart.Position + Vector3.new(math.random(-20, 20), 0, math.random(-20, 20))) end
                 end)
-                task.wait(1.5)
+                task.wait(2.5) -- Jalan pelan-pelan biar ga nge-lag
             end
         end)
         notify("WillHub", "Auto Walk ON")
@@ -370,7 +360,9 @@ createToggle(pFarm, "Auto Walk (Muter)", 7, function(state)
     end
 end)
 
+-- ==========================================
 -- TAB STATUS
+-- ==========================================
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Size = UDim2.new(1, 0, 0, 150)
 StatusLabel.BackgroundColor3 = C.BgElement
@@ -397,7 +389,9 @@ RunService.RenderStepped:Connect(function()
     )
 end)
 
+-- ==========================================
 -- TAB SETTING
+-- ==========================================
 local RejoinBtn = Instance.new("TextButton")
 RejoinBtn.Size = UDim2.new(1, 0, 0, 45)
 RejoinBtn.BackgroundColor3 = C.Accent
