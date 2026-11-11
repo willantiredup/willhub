@@ -4,13 +4,13 @@
     File utama yang di-fetch : willhub/willhub.lua
 ]]
 
-local GITHUB_USER = "USERNAME_KAMU"
+local GITHUB_USER = "willantiredup"
 local REPO        = "willhub"
 local BRANCH      = "main"
 local FILE        = "willhub.lua"
 
 local URL = ("https://raw.githubusercontent.com/%s/%s/%s/%s")
-    :format(GITHUB_USER, REPO, BRANCH, FILE)
+    :format(willantiredup, REPO, BRANCH, FILE)
 
 local ok, err = pcall(function()
     local src = game:HttpGet(URL, true)
