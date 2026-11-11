@@ -1,5 +1,5 @@
 -- ==========================================
--- WillHub - TBOD2 Safe Edition (Anti-Freeze)
+-- WillHub - TBOD2 Ultimate Tycoon Farm
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
@@ -27,7 +27,6 @@ local function notify(title, text)
     pcall(function() game:GetService("StarterGui"):SetCore("SendNotification", {Title = title, Text = text, Duration = 3}) end)
 end
 
--- FLOATING TOGGLE
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Size = UDim2.new(0, 40, 0, 40)
 ToggleBtn.Position = UDim2.new(0, 20, 0, 100)
@@ -41,7 +40,6 @@ ToggleBtn.Draggable = true
 ToggleBtn.Parent = ScreenGui
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 
--- MAIN WINDOW
 local Main = Instance.new("Frame")
 Main.Size = UDim2.new(0, 450, 0, 320)
 Main.Position = UDim2.new(0.5, -225, 0.5, -160)
@@ -53,7 +51,6 @@ Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
 
 ToggleBtn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
 
--- TOP BAR
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, 0, 0, 50)
 TopBar.BackgroundColor3 = C.BgTop
@@ -63,7 +60,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(0, 250, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "🍔 TBOD2 Safe Edition"
+Title.Text = "🍔 TBOD2 Ultimate Farm"
 Title.TextColor3 = C.Accent
 Title.Font = Enum.Font.Code
 Title.TextSize = 18
@@ -82,7 +79,6 @@ CloseBtn.Parent = TopBar
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 15)
 CloseBtn.MouseButton1Click:Connect(function() Main.Visible = false end)
 
--- CONTENT
 local Scroll = Instance.new("ScrollingFrame")
 Scroll.Size = UDim2.new(1, -20, 1, -70)
 Scroll.Position = UDim2.new(0, 10, 0, 55)
@@ -141,11 +137,9 @@ local function createToggle(parent, text, callback)
     end)
 end
 
--- ==========================================
 -- FITUR 1: AUTO BUY & UPGRADE
--- ==========================================
 local buyThread = nil
-createToggle(Scroll, "Auto Buy & Upgrade", function(state)
+createToggle(Scroll, "Auto Buy & Upgrade (Klik Semua)", function(state)
     if state then
         notify("TBOD2", "Auto Buy ON")
         buyThread = task.spawn(function()
@@ -153,11 +147,9 @@ createToggle(Scroll, "Auto Buy & Upgrade", function(state)
                 pcall(function()
                     local char = player.Character
                     local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                    local hum = char and char:FindFirstChildOfClass("Humanoid")
                     
-                    if hrp and hum then
-                        -- Scan radius kecil biar ga berat
-                        local parts = workspace:GetPartBoundsInRadius(hrp.Position, 25)
+                    if hrp then
+                        local parts = workspace:GetPartBoundsInRadius(hrp.Position, 30)
                         for _, part in pairs(parts) do
                             for _, child in pairs(part:GetChildren()) do
                                 if child:IsA("ProximityPrompt") then
@@ -169,7 +161,7 @@ createToggle(Scroll, "Auto Buy & Upgrade", function(state)
                         end
                     end
                 end)
-                task.wait(1) -- Jeda 1 detik biar aman
+                task.wait(0.5) -- Cepet tapi aman
             end
         end)
     else
@@ -178,46 +170,51 @@ createToggle(Scroll, "Auto Buy & Upgrade", function(state)
     end
 end)
 
--- ==========================================
--- FITUR 2: MONEY DUPLICATOR (Safe)
--- ==========================================
-local dupeThread = nil
-createToggle(Scroll, "Money Duplicator (Spam Touch)", function(state)
+-- FITUR 2: AUTO WALK TO CASH
+local walkThread = nil
+createToggle(Scroll, "Auto Walk to Cash (Ambil Duit)", function(state)
     if state then
-        notify("TBOD2", "Duplicator ON")
-        dupeThread = task.spawn(function()
+        notify("TBOD2", "Auto Walk ON")
+        walkThread = task.spawn(function()
             while state do
                 pcall(function()
                     local char = player.Character
                     local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                    local hum = char and char:FindFirstChildOfClass("Humanoid")
                     
-                    if hrp then
-                        -- Scan radius 30 aja, bukan seluruh map
-                        local parts = workspace:GetPartBoundsInRadius(hrp.Position, 30)
+                    if hrp and hum then
+                        local closest, dist = nil, 40
+                        
+                        local parts = workspace:GetPartBoundsInRadius(hrp.Position, 40)
                         for _, part in pairs(parts) do
-                            if part:IsA("BasePart") and not part:IsDescendantOf(char) then
+                            if part:IsA("BasePart") and not part:IsDescendantOf(char) and part.Name ~= "Baseplate" then
                                 local name = string.lower(part.Name)
-                                if string.find(name, "cash") or string.find(name, "money") or string.find(name, "coin") then
-                                    if firetouchinterest then
-                                        pcall(function()
-                                            for i = 1, 5 do
-                                                firetouchinterest(hrp, part, 0)
-                                                task.wait(0.02)
-                                                firetouchinterest(hrp, part, 1)
-                                                task.wait(0.02)
-                                            end
-                                        end)
-                                    end
+                                -- Cari objek duit (nama biasanya cash, money, coin, atau Part kecil)
+                                if (string.find(name, "cash") or string.find(name, "money") or string.find(name, "coin")) and part.Size.Magnitude <= 15 then
+                                    local d = (part.Position - hrp.Position).Magnitude
+                                    if d < dist then dist, closest = d, part end
                                 end
+                            end
+                        end
+                        
+                        if closest then
+                            hum:MoveTo(closest.Position)
+                            task.wait(0.1)
+                            -- Paksa sentuh pas udah deket
+                            if firetouchinterest then
+                                pcall(function()
+                                    firetouchinterest(hrp, closest, 0)
+                                    firetouchinterest(hrp, closest, 1)
+                                end)
                             end
                         end
                     end
                 end)
-                task.wait(1.5) -- Jeda jauh lebih longgar biar ga freeze
+                task.wait(0.5) -- Jeda aman
             end
         end)
     else
-        notify("TBOD2", "Duplicator OFF")
-        if dupeThread then task.cancel(dupeThread) end
+        notify("TBOD2", "Auto Walk OFF")
+        if walkThread then task.cancel(walkThread) end
     end
 end)
