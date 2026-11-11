@@ -1,5 +1,5 @@
 -- ==========================================
--- WillHub - Growblox Simulator (Final UI)
+-- WillHub - V3 (Tabbed UI)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
@@ -26,7 +26,7 @@ local C = {
 }
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "WillHubCyber"
+ScreenGui.Name = "WillHubV3"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
@@ -58,25 +58,23 @@ Main.Draggable = true
 Main.ClipsDescendants = true
 Main.Parent = ScreenGui
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
-local MainStroke = Instance.new("UIStroke", Main)
-MainStroke.Color = Color3.fromRGB(40, 45, 60)
 
 ToggleBtn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
 
--- TOP BAR & CLOSE BUTTON
+-- TOP BAR
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, 0, 0, 50)
 TopBar.BackgroundColor3 = C.BgTop
 TopBar.Parent = Main
 
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(0, 200, 1, 0)
+Title.Size = UDim2.new(0, 250, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "WILLHUB // SIMULATOR"
-Title.TextColor3 = C.NeonCyan or C.Accent
+Title.Text = "⚡ WILLHUB // V3"
+Title.TextColor3 = C.Accent
 Title.Font = Enum.Font.Code
-Title.TextSize = 16
+Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = TopBar
 
@@ -201,12 +199,11 @@ local function createToggle(parent, text, callback)
     end)
 end
 
--- ================= LOGIKA FARM =================
+-- LOGIKA FARM
 local clickThread, walkThread, collectThread = nil, nil, nil
 
 createToggle(pFarm, "Fast Punch (Spam Klik)", function(state)
     if state then
-        notify("WillHub", "Fast Punch ON")
         clickThread = task.spawn(function()
             while state do
                 pcall(function()
@@ -218,14 +215,12 @@ createToggle(pFarm, "Fast Punch (Spam Klik)", function(state)
             end
         end)
     else
-        notify("WillHub", "Fast Punch OFF")
         if clickThread then task.cancel(clickThread) end
     end
 end)
 
 createToggle(pFarm, "Auto Walk (Jalan Muter)", function(state)
     if state then
-        notify("WillHub", "Auto Walk ON")
         walkThread = task.spawn(function()
             while state do
                 pcall(function()
@@ -239,14 +234,12 @@ createToggle(pFarm, "Auto Walk (Jalan Muter)", function(state)
             end
         end)
     else
-        notify("WillHub", "Auto Walk OFF")
         if walkThread then task.cancel(walkThread) end
     end
 end)
 
 createToggle(pFarm, "Auto Collect (Ambil Drop)", function(state)
     if state then
-        notify("WillHub", "Auto Collect ON")
         collectThread = task.spawn(function()
             while state do
                 pcall(function()
@@ -268,12 +261,11 @@ createToggle(pFarm, "Auto Collect (Ambil Drop)", function(state)
             end
         end)
     else
-        notify("WillHub", "Auto Collect OFF")
         if collectThread then task.cancel(collectThread) end
     end
 end)
 
--- ================= LOGIKA STATUS =================
+-- LOGIKA STATUS
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Size = UDim2.new(1, -10, 0, 120)
 StatusLabel.BackgroundColor3 = C.BgElement
@@ -282,7 +274,7 @@ StatusLabel.Font = Enum.Font.Code
 StatusLabel.TextSize = 12
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 StatusLabel.TextYAlignment = Enum.TextYAlignment.Top
-StatusLabel.Text = "Menunggu data..."
+StatusLabel.Text = "Memuat data..."
 StatusLabel.Parent = pStatus
 Instance.new("UICorner", StatusLabel).CornerRadius = UDim.new(0, 6)
 
@@ -300,7 +292,7 @@ RunService.RenderStepped:Connect(function()
     )
 end)
 
--- ================= LOGIKA SETTING =================
+-- LOGIKA SETTING
 local RejoinBtn = Instance.new("TextButton")
 RejoinBtn.Size = UDim2.new(1, -10, 0, 45)
 RejoinBtn.BackgroundColor3 = C.Accent
@@ -316,5 +308,4 @@ RejoinBtn.MouseButton1Click:Connect(function()
     TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
 end)
 
--- DEFAULT TAB
 switchTab("Farm", TabBar:GetChildren()[1])
