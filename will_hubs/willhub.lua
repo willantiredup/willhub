@@ -1,41 +1,19 @@
---[[
-    WillHub - Growblox Auto Farm (GUI Version)
-    Game : https://www.roblox.com/games/112863874972771/Growblox
-]]
-
-local Players           = game:GetService("Players")
+-- WillHub - Growblox (UI first, remote loaded safely)
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local CoreGui           = game:GetService("CoreGui")
-local player            = Players.LocalPlayer
+local player = Players.LocalPlayer
 
 local CONFIG = {
-    AUTO_PLANT   = true,
-    AUTO_HARVEST = true,
-    AUTO_WATER   = true,
-    AUTO_SELL    = true,
-    SEED_NAME    = "Hay",
-    WALK_SPEED   = 60,
-    FARM_DELAY   = 1.5,
-    OUTBOX       = false,
+    AUTO_PLANT = true, AUTO_HARVEST = true, AUTO_WATER = true, AUTO_SELL = true,
+    SEED_NAME = "Hay", WALK_SPEED = 60, FARM_DELAY = 1.5, OUTBOX = false,
 }
 
-local Remotes = {
-    ManipulateCrop = ReplicatedStorage:WaitForChild("ManipulateCrop"),
-    UseMarket      = ReplicatedStorage:WaitForChild("UseMarket"),
-    CropSold       = ReplicatedStorage:WaitForChild("CropSold"),
-    UseItem        = ReplicatedStorage:WaitForChild("UseItem"),
-}
-local PlayerData = require(ReplicatedStorage:WaitForChild("PlayerData"))
-
-local farm, plots, isSelling, running = nil, {}, false, false
-
--- ==========================================
--- UI CREATION
--- ==========================================
+-- ===== UI DULUAN =====
+local parentGui = (gethui and gethui()) or game:GetService("CoreGui")
 local gui = Instance.new("ScreenGui")
 gui.Name = "WillHubUI"
 gui.ResetOnSpawn = false
-gui.Parent = CoreGui
+gui.Parent = parentGui
 
 local main = Instance.new("Frame")
 main.Size = UDim2.new(0, 220, 0, 150)
@@ -76,17 +54,37 @@ status.TextColor3 = Color3.fromRGB(150, 150, 150)
 status.Font = Enum.Font.Gotham
 status.TextSize = 12
 status.Parent = main
--- ==========================================
 
--- ==========================================
--- LOGIC FUNCTIONS
--- ==========================================
+print("[WillHub] UI created.")
+-- =====================
+
+-- ===== LOAD REMOTE DENGAN AMAN =====
+local Remotes = {}
+local PlayerData
+task.spawn(function()
+    local ok, err = pcall(function()
+        Remotes.ManipulateCrop = ReplicatedStorage:WaitForChild("ManipulateCrop", 10)
+        Remotes.UseMarket      = ReplicatedStorage:WaitForChild("UseMarket", 10)
+        Remotes.CropSold       = ReplicatedStorage:WaitForChild("CropSold", 10)
+        Remotes.UseItem        = ReplicatedStorage:WaitForChild("UseItem", 10)
+        PlayerData             = require(ReplicatedStorage:WaitForChild("PlayerData", 10))
+    end)
+    if not ok then
+        warn("[WillHub] Remote/PlayerData gagal: " .. tostring(err))
+        status.Text = "Error: remote tidak ketemu"
+        status.TextColor3 = Color3.fromRGB(255, 80, 80)
+    else
+        print("[WillHub] Remote loaded.")
+    end
+end)
+-- =====================================
+
+local farm, plots, isSelling, running = nil, {}, false, false
+
 local function findFarm()
     for i = 1, 8 do
         local f = workspace:FindFirstChild("Farm" .. i)
-        if f and f:FindFirstChild("Owner") and f.Owner.Value == player then
-            farm = f; break
-        end
+        if f and f:FindFirstChild("Owner") and f.Owner.Value == player then farm = f; break end
     end
     if not farm then return end
     plots = {}
@@ -105,13 +103,12 @@ local function setSpeed()
 end
 
 local function sellCrops()
-    if not CONFIG.AUTO_SELL or isSelling then return end
+    if not CONFIG.AUTO_SELL or isSelling or not PlayerData or not Remotes.UseMarket then return end
     local data = PlayerData.get()
     if not data or data.weight <= 0 then return end
     isSelling = true
     if not CONFIG.OUTBOX and player.Character then
-        player.Character:MoveTo(Vector3.new(52, 5, -453))
-        task.wait(2)
+        player.Character:MoveTo(Vector3.new(52, 5, -453)); task.wait(2)
     end
     for cropType in pairs(data.crops) do
         local qty = data.crops[cropType] or 0
@@ -129,28 +126,24 @@ local function processPlot(plot)
     for _, crop in pairs(plot:GetChildren()) do
         if crop:FindFirstChild("CropType") then
             local cropType = crop.CropType.Value
-
-            -- HARVEST
-            if CONFIG.AUTO_HARVEST and cropType ~= "none" then
+            if CONFIG.AUTO_HARVEST and cropType ~= "none" and Remotes.ManipulateCrop then
                 local stage = crop.CropStage and crop.CropStage.Value or 0
-                local reqStage = PlayerData.get().crops[cropType] or 99
+                local reqStage = (PlayerData and PlayerData.get().crops[cropType]) or 99
                 if stage >= reqStage then
                     pcall(function() Remotes.ManipulateCrop:FireServer(crop, "Harvest") end)
                     task.wait(0.1)
                 end
             end
-            -- PLANT
-            if CONFIG.AUTO_PLANT and cropType == "none" then
+            if CONFIG.AUTO_PLANT and cropType == "none" and PlayerData and Remotes.ManipulateCrop then
                 local data = PlayerData.get()
                 if data.seeds[CONFIG.SEED_NAME] and data.seeds[CONFIG.SEED_NAME] > 0 then
                     pcall(function() Remotes.ManipulateCrop:FireServer(crop, "PlantSeed", CONFIG.SEED_NAME) end)
                     task.wait(0.1)
                 end
             end
-            -- WATER
-            if CONFIG.AUTO_WATER and crop:FindFirstChild("WaterContent") and crop.WaterContent.Value <= 2 then
+            if CONFIG.AUTO_WATER and crop:FindFirstChild("WaterContent") and crop.WaterContent.Value <= 2 and Remotes.ManipulateCrop then
                 Remotes.ManipulateCrop:FireServer(crop, "Water")
-                if farm and farm:FindFirstChild("Well") then
+                if farm and farm:FindFirstChild("Well") and Remotes.UseItem then
                     Remotes.UseItem:FireServer(farm.Well)
                 end
             end
@@ -163,7 +156,6 @@ local function startFarm()
     toggle.Text = "AUTO FARM: ON"
     toggle.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
     status.Text = "Status: Farming... 🥀"
-    
     task.spawn(function()
         findFarm()
         while running do
@@ -172,8 +164,7 @@ local function startFarm()
                 if #plots == 0 then findFarm() end
                 for _, plot in pairs(plots) do
                     if not running then break end
-                    processPlot(plot)
-                    task.wait(0.05)
+                    processPlot(plot); task.wait(0.05)
                 end
                 sellCrops()
             end)
@@ -181,11 +172,7 @@ local function startFarm()
         end
     end)
 end
--- ==========================================
 
--- ==========================================
--- UI EVENTS
--- ==========================================
 toggle.MouseButton1Click:Connect(function()
     if running then
         running = false
