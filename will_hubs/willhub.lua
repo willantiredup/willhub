@@ -1,5 +1,5 @@
 -- ==========================================
--- WillHub - TBOD2 Auto Buy Pad
+-- WillHub - TBOD2 Auto Upgrade (Idle Mode)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
@@ -60,7 +60,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(0, 250, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "🍔 TBOD2 Auto Buy Pad"
+Title.Text = "🍔 TBOD2 Auto Upgrade"
 Title.TextColor3 = C.Accent
 Title.Font = Enum.Font.Code
 Title.TextSize = 18
@@ -138,13 +138,13 @@ local function createToggle(parent, text, callback)
 end
 
 -- ==========================================
--- FITUR: AUTO BUY PAD (INJEK PLAT HIJAU)
+-- FITUR: AUTO UPGRADE
 -- ==========================================
-local buyThread = nil
-createToggle(Scroll, "Auto Buy Pad (Injek Plat Hijau)", function(state)
+local upgradeThread = nil
+createToggle(Scroll, "Auto Upgrade (Diam jika kosong)", function(state)
     if state then
-        notify("TBOD2", "Auto Buy Pad ON")
-        buyThread = task.spawn(function()
+        notify("TBOD2", "Auto Upgrade ON")
+        upgradeThread = task.spawn(function()
             while state do
                 pcall(function()
                     local char = player.Character
@@ -154,42 +154,51 @@ createToggle(Scroll, "Auto Buy Pad (Injek Plat Hijau)", function(state)
                     if hrp and hum then
                         -- Scan plat di sekitar base (radius 60)
                         local parts = workspace:GetPartBoundsInRadius(hrp.Position, 60)
+                        local closestPad = nil
+                        local shortestDist = 60
+                        
                         for _, part in pairs(parts) do
-                            -- Cek apakah objeknya Part/plat
                             if part:IsA("BasePart") and not part:IsDescendantOf(char) then
-                                -- LOGIKA PLAT HIJAU:
-                                -- Cek apakah warnanya hijau (G > R dan G > B)
+                                -- Cek warna hijau (G dominan) atau nama plat
                                 local color = part.Color
-                                local isGreen = (color.G > 0.5 and color.G > color.R and color.G > color.B)
-                                
-                                -- Atau cek nama plat (kadang namanya BuyPad, Upgrade, dll)
+                                local isGreen = (color.G > 0.4 and color.G > color.R * 1.2 and color.G > color.B * 1.2)
                                 local name = string.lower(part.Name)
                                 local isPadName = string.find(name, "buy") or string.find(name, "upgrade") or string.find(name, "pad") or string.find(name, "button")
                                 
                                 if isGreen or isPadName then
-                                    -- Kalau platnya ketemu, teleport/geser ke atas plat
-                                    -- Pakai MoveTo biar natural (nggak kena anti-cheat)
-                                    hum:MoveTo(part.Position + Vector3.new(0, 3, 0))
-                                    task.wait(0.1)
-                                    
-                                    -- Sikat pakai firetouchinterest
-                                    if firetouchinterest then
-                                        pcall(function()
-                                            firetouchinterest(hrp, part, 0)
-                                            task.wait(0.05)
-                                            firetouchinterest(hrp, part, 1)
-                                        end)
+                                    local dist = (part.Position - hrp.Position).Magnitude
+                                    if dist < shortestDist then
+                                        shortestDist = dist
+                                        closestPad = part
                                     end
                                 end
                             end
                         end
+                        
+                        -- HANYA GERAK KALAU ADA PLAT HIJAU
+                        if closestPad then
+                            -- Kalau jaraknya masih jauh, jalan ke sana
+                            if shortestDist > 4 then
+                                hum:MoveTo(closestPad.Position + Vector3.new(0, 2, 0))
+                            else
+                                -- Kalau udah deket, injek platnya
+                                if firetouchinterest then
+                                    pcall(function()
+                                        firetouchinterest(hrp, closestPad, 0)
+                                        task.wait(0.1)
+                                        firetouchinterest(hrp, closestPad, 1)
+                                    end)
+                                end
+                            end
+                        end
+                        -- Kalau closestPad nil, script nggak ngelakuin apa-apa (Diam)
                     end
                 end)
-                task.wait(0.5) -- Jeda aman
+                task.wait(0.3) -- Jeda loop
             end
         end)
     else
-        notify("TBOD2", "Auto Buy Pad OFF")
-        if buyThread then task.cancel(buyThread) end
+        notify("TBOD2", "Auto Upgrade OFF")
+        if upgradeThread then task.cancel(upgradeThread) end
     end
 end)
