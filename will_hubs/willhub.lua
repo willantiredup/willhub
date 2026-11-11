@@ -1,5 +1,5 @@
 -- ==========================================
--- WillHub - Ultimate Simulation (Anti-Ban & Anti-Freeze)
+-- WillHub - Ultimate Simulation V2 (FINAL)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
@@ -7,7 +7,12 @@ local VirtualInputManager = game:GetService("VirtualInputManager")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
-if CoreGui:FindFirstChild("WillHubCyber") then CoreGui.WillHubCyber:Destroy() end
+-- Paksa hapus UI lama (WillHubCyber / WillHubUI / dll)
+for _, v in pairs(CoreGui:GetChildren()) do
+    if string.find(v.Name, "WillHub") then
+        v:Destroy()
+    end
+end
 
 local C = {
     BgMain = Color3.fromRGB(13, 15, 23),
@@ -21,7 +26,7 @@ local C = {
 }
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "WillHubCyber"
+ScreenGui.Name = "WillHubSimulatorV2"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
@@ -65,13 +70,13 @@ TopBar.BackgroundColor3 = C.BgTop
 TopBar.Parent = Main
 
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(0, 200, 1, 0)
+Title.Size = UDim2.new(0, 250, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "⚡ WillHub Simulator"
+Title.Text = "⚡ SIMULATOR V2 (FINAL)"
 Title.TextColor3 = C.TextW
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 18
+Title.TextSize = 16
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = TopBar
 
@@ -142,7 +147,7 @@ local function createToggle(parent, text, callback)
     end)
 end
 
--- FITUR 1: FAST PUNCH (Spam Klik Tanpa Henti)
+-- FITUR 1: FAST PUNCH
 local clickThread = nil
 createToggle(Scroll, "Fast Punch (Spam Klik)", function(state)
     if state then
@@ -163,7 +168,7 @@ createToggle(Scroll, "Fast Punch (Spam Klik)", function(state)
     end
 end)
 
--- FITUR 2: AUTO WALK (Jalan Muter Nyari Block)
+-- FITUR 2: AUTO WALK
 local walkThread = nil
 createToggle(Scroll, "Auto Walk (Jalan Muter)", function(state)
     if state then
@@ -188,7 +193,7 @@ createToggle(Scroll, "Auto Walk (Jalan Muter)", function(state)
     end
 end)
 
--- FITUR 3: AUTO COLLECT (Ambil Drop Item Terdekat)
+-- FITUR 3: AUTO COLLECT
 local collectThread = nil
 createToggle(Scroll, "Auto Collect (Ambil Drop)", function(state)
     if state then
