@@ -1,5 +1,5 @@
 -- ==========================================
--- WillHub - Farm UI (Accordion Edition)
+-- WillHub - Farm UI (Accordion Edition - FIXED)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
@@ -148,22 +148,33 @@ local function createAccordion(title)
     innerList.Padding = UDim.new(0, 8)
 
     local open = false
+    local function updateSize()
+        if open then
+            inner.Size = UDim2.new(1, -20, 0, innerList.AbsoluteContentSize.Y)
+            frame.Size = UDim2.new(1, -10, 0, 45 + innerList.AbsoluteContentSize.Y + 10)
+        else
+            frame.Size = UDim2.new(1, -10, 0, 45)
+        end
+    end
+
     header.MouseButton1Click:Connect(function()
         open = not open
         header.Text = "  |  " .. title .. (open and "  v" or "  >")
-        frame.Size = UDim2.new(1, -10, 0, open and (45 + innerList.AbsoluteContentSize.Y + 10) or 45)
-        inner.Size = UDim2.new(1, -20, 0, innerList.AbsoluteContentSize.Y)
+        updateSize()
     end)
+    
+    innerList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSize)
     return inner
 end
 
--- FUNGSI TOGGLE
+-- FUNGSI TOGGLE (DIPERBAIKI PAKAI TEXTBUTTON)
 local function createToggle(parent, text, callback)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 0, 40)
     frame.BackgroundColor3 = C.BgMain
     frame.Parent = parent
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 4)
+    
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(1, -60, 1, 0)
     lbl.Position = UDim2.new(0, 10, 0, 0)
@@ -174,18 +185,23 @@ local function createToggle(parent, text, callback)
     lbl.TextSize = 12
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = frame
-    local bg = Instance.new("Frame")
+    
+    -- PAKAI TEXTBUTTON BIAR BISA DIKLIK
+    local bg = Instance.new("TextButton")
     bg.Size = UDim2.new(0, 40, 0, 20)
     bg.Position = UDim2.new(1, -50, 0.5, -10)
     bg.BackgroundColor3 = C.BgElement
+    bg.Text = ""
     bg.Parent = frame
     Instance.new("UICorner", bg).CornerRadius = UDim.new(1, 0)
+    
     local dot = Instance.new("Frame")
     dot.Size = UDim2.new(0, 14, 0, 14)
     dot.Position = UDim2.new(0, 3, 0.5, -7)
     dot.BackgroundColor3 = C.TextG
     dot.Parent = bg
     Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
+    
     local isActive = false
     bg.MouseButton1Click:Connect(function()
         isActive = not isActive
