@@ -1,5 +1,5 @@
 -- ==========================================
--- WillHub - TBOD2 Auto Upgrade (Idle Mode)
+-- WillHub - TBOD2 Auto Upgrade (Force Touch)
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
@@ -138,10 +138,10 @@ local function createToggle(parent, text, callback)
 end
 
 -- ==========================================
--- FITUR: AUTO UPGRADE
+-- FITUR: AUTO UPGRADE (FORCE TOUCH)
 -- ==========================================
 local upgradeThread = nil
-createToggle(Scroll, "Auto Upgrade (Diam jika kosong)", function(state)
+createToggle(Scroll, "Auto Upgrade (Paksa Injek)", function(state)
     if state then
         notify("TBOD2", "Auto Upgrade ON")
         upgradeThread = task.spawn(function()
@@ -152,22 +152,26 @@ createToggle(Scroll, "Auto Upgrade (Diam jika kosong)", function(state)
                     local hum = char and char:FindFirstChildOfClass("Humanoid")
                     
                     if hrp and hum then
-                        -- Scan plat di sekitar base (radius 60)
-                        local parts = workspace:GetPartBoundsInRadius(hrp.Position, 60)
-                        local closestPad = nil
-                        local shortestDist = 60
+                        hum.WalkSpeed = 50 -- Paksa lari kenceng
                         
-                        for _, part in pairs(parts) do
+                        local closestPad = nil
+                        local shortestDist = 50 -- Radius pencarian
+                        
+                        -- Paksa scan SEMUA objek (biar tembus CanQuery)
+                        for _, part in pairs(workspace:GetDescendants()) do
                             if part:IsA("BasePart") and not part:IsDescendantOf(char) then
-                                -- Cek warna hijau (G dominan) atau nama plat
-                                local color = part.Color
-                                local isGreen = (color.G > 0.4 and color.G > color.R * 1.2 and color.G > color.B * 1.2)
-                                local name = string.lower(part.Name)
-                                local isPadName = string.find(name, "buy") or string.find(name, "upgrade") or string.find(name, "pad") or string.find(name, "button")
-                                
-                                if isGreen or isPadName then
-                                    local dist = (part.Position - hrp.Position).Magnitude
-                                    if dist < shortestDist then
+                                local dist = (part.Position - hrp.Position).Magnitude
+                                if dist < shortestDist then
+                                    -- Cek warna hijau (toleransi lebar)
+                                    local c = part.Color
+                                    local isGreen = (c.G > 0.3 and c.G > c.R and c.G > c.B)
+                                    
+                                    -- Cek nama (kalau platnya ga hijau tapi namanya Buy)
+                                    local name = string.lower(part.Name)
+                                    local isPadName = string.find(name, "buy") or string.find(name, "upgrade") or string.find(name, "button")
+                                    
+                                    -- Kalau plat ketemu, simpan
+                                    if isGreen or isPadName then
                                         shortestDist = dist
                                         closestPad = part
                                     end
@@ -175,26 +179,27 @@ createToggle(Scroll, "Auto Upgrade (Diam jika kosong)", function(state)
                             end
                         end
                         
-                        -- HANYA GERAK KALAU ADA PLAT HIJAU
+                        -- Kalau plat hijau ketemu, eksekusi!
                         if closestPad then
-                            -- Kalau jaraknya masih jauh, jalan ke sana
-                            if shortestDist > 4 then
-                                hum:MoveTo(closestPad.Position + Vector3.new(0, 2, 0))
-                            else
-                                -- Kalau udah deket, injek platnya
-                                if firetouchinterest then
-                                    pcall(function()
+                            -- Paksa teleport ke atas plat (anti nyangkut)
+                            hrp.CFrame = CFrame.new(closestPad.Position + Vector3.new(0, 3, 0))
+                            task.wait(0.2)
+                            
+                            -- Injek platnya bertubi-tubi
+                            if firetouchinterest then
+                                pcall(function()
+                                    for i = 1, 5 do
                                         firetouchinterest(hrp, closestPad, 0)
-                                        task.wait(0.1)
+                                        task.wait(0.05)
                                         firetouchinterest(hrp, closestPad, 1)
-                                    end)
-                                end
+                                        task.wait(0.05)
+                                    end
+                                end)
                             end
                         end
-                        -- Kalau closestPad nil, script nggak ngelakuin apa-apa (Diam)
                     end
                 end)
-                task.wait(0.3) -- Jeda loop
+                task.wait(0.5) -- Jeda scan
             end
         end)
     else
